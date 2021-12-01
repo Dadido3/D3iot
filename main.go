@@ -2,7 +2,6 @@ package main
 
 import (
 	"D3domotics/light/wiz"
-	"fmt"
 	"log"
 	"time"
 )
@@ -12,56 +11,59 @@ func main() {
 
 	// Interpolate between these pilots.
 	pilots := []wiz.Pilot{
-		//{State: true, R: 0, G: 0, B: 0, C: 0, W: 45, Dimming: 100}, // Warm white with a good CRI.
-		//{State: true, R: 0, G: 0, B: 0, C: 45, W: 0, Dimming: 30}, // Cold white with a good CRI.
-		//{State: true, R: 80, G: 100, B: 40, C: 0, W: 0, Dimming: 30}, // Same cold white simlated with RGB colors. Bad CRI.
+		//wiz.Pilot{}.WithRGBW(0, 0, 0, 0, 45, 100),    // Warm white with a good CRI.
+		wiz.Pilot{}.WithRGBW(0, 0, 0, 45, 0, 100),    // Cold white with a good CRI.
+		wiz.Pilot{}.WithRGBW(80, 100, 40, 0, 0, 100), // Same cold white simlated with RGB colors. Bad CRI.
 
 		// "Fire" sequence.
-		{State: true, R: 0, G: 0, B: 0, CW: 0, WW: 40, Dimming: 100},
-		{State: true, R: 20, G: 0, B: 0, CW: 0, WW: 40, Dimming: 100},
-		{State: true, R: 30, G: 0, B: 0, CW: 10, WW: 30, Dimming: 100},
-		{State: true, R: 10, G: 0, B: 0, CW: 0, WW: 50, Dimming: 100},
+		/*wiz.Pilot{}.WithRGBW(0, 0, 0, 0, 40, 100),
+		wiz.Pilot{}.WithRGBW(20, 0, 0, 0, 40, 100),
+		wiz.Pilot{}.WithRGBW(30, 0, 0, 10, 30, 100),
+		wiz.Pilot{}.WithRGBW(10, 0, 0, 0, 50, 100),*/
 	}
 
-	// Init old pilot for mixing.
-	p1 := wiz.Pilot{State: true, R: 0, G: 0, B: 0, CW: 0, WW: 0, Dimming: 100}
-
-	steps := 10
-
-	/*if err := light.Pulse(100, 100*time.Millisecond); err != nil {
+	/*if err := light.Pulse(1000, 100*time.Millisecond); err != nil {
 		log.Printf("light.Pulse() failed: %v", err)
 	}*/
 
-	if result, err := light.GetUserConfig(); err != nil {
+	/*if result, err := light.GetUserConfig(); err != nil {
 		log.Printf("query failed: %v", err)
 	} else {
 		log.Printf("%#v", result)
-	}
+	}*/
 
-	if true {
-		return
-	}
+	/*if err := light.SetPilot(wiz.Pilot{}.WithRGBW(50, 0, 0, 0, 00, 100)); err != nil {
+		log.Printf("light.SetPilot() failed: %v", err)
+	}*/
+
+	/*if err := light.SetPilot(wiz.Pilot{}.WithScene(wiz.SceneNoScene, 6000, 50, 50)); err != nil {
+		log.Printf("light.SetPilot() failed: %v", err)
+	}*/
+
+	// Init first pilot for blending/mixing.
+	p1 := pilots[0]
+
+	steps := 10
 
 	for {
 		for _, p2 := range pilots {
 			for i := 0; i < steps; i++ {
 
-				a, b := 1-float64(i)/float64(steps), float64(i)/float64(steps)
-				mixedPilot := wiz.Pilot{
+				factor1, factor2 := 1-float64(i)/float64(steps), float64(i)/float64(steps)
+				if p1.HasRGBW() && p2.HasRGBW() {
 
-					State:   true,
-					R:       uint8(float64(p1.R)*a + float64(p2.R)*b),
-					G:       uint8(float64(p1.G)*a + float64(p2.G)*b),
-					B:       uint8(float64(p1.B)*a + float64(p2.B)*b),
-					CW:      uint8(float64(p1.CW)*a + float64(p2.CW)*b),
-					WW:      uint8(float64(p1.WW)*a + float64(p2.WW)*b),
-					Dimming: uint(float64(p1.Dimming)*a + float64(p2.Dimming)*b),
-				}
+					r := uint8(float64(*p1.R)*factor1 + float64(*p2.R)*factor2)
+					g := uint8(float64(*p1.G)*factor1 + float64(*p2.G)*factor2)
+					b := uint8(float64(*p1.B)*factor1 + float64(*p2.B)*factor2)
+					cw := uint8(float64(*p1.CW)*factor1 + float64(*p2.CW)*factor2)
+					ww := uint8(float64(*p1.WW)*factor1 + float64(*p2.WW)*factor2)
+					dimming := uint(float64(p1.Dimming)*factor1 + float64(p2.Dimming)*factor2)
 
-				fmt.Println(mixedPilot)
+					mixedPilot := wiz.Pilot{}.WithRGBW(r, g, b, cw, ww, dimming)
 
-				if err := light.SetPilot(mixedPilot); err != nil {
-					log.Printf("light.SetPilot() failed: %v", err)
+					if err := light.SetPilot(mixedPilot); err != nil {
+						log.Printf("light.SetPilot() failed: %v", err)
+					}
 				}
 				time.Sleep(100 * time.Millisecond)
 			}

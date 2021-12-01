@@ -12,49 +12,50 @@ type Light struct {
 	address string
 }
 
-// NewLight returns an object that represents a single WiZ light bulb accessible by the given address.
+// NewLight returns an object that represents a single WiZ light accessible by the given address.
 //
 //	light := NewLight("192.168.1.123:38899")
 func NewLight(address string) *Light {
 	return &Light{address: address}
 }
 
-type scene uint
+type Scene uint
 
 const (
-	sceneOcean        scene = 1
-	sceneRomance      scene = 2
-	sceneSunset       scene = 3
-	sceneParty        scene = 4
-	sceneFireplace    scene = 5
-	sceneCozy         scene = 6
-	sceneForest       scene = 7
-	scenePastelColors scene = 8
-	sceneWakeUp       scene = 9
-	sceneBedtime      scene = 10
-	sceneWarmWhite    scene = 11
-	sceneDaylight     scene = 12
-	sceneCoolWhite    scene = 13
-	sceneNightLight   scene = 14
-	sceneFocus        scene = 15
-	sceneRelax        scene = 16
-	sceneTrueColors   scene = 17
-	sceneTVTime       scene = 18
-	scenePlantgrowth  scene = 19
-	sceneSpring       scene = 20
-	sceneSummer       scene = 21
-	sceneFall         scene = 22
-	sceneDeepdive     scene = 23
-	sceneJungle       scene = 24
-	sceneMojito       scene = 25
-	sceneClub         scene = 26
-	sceneChristmas    scene = 27
-	sceneHalloween    scene = 28
-	sceneCandlelight  scene = 29
-	sceneGoldenWhite  scene = 30
-	scenePulse        scene = 31
-	sceneSteampunk    scene = 32
-	sceneRhythm       scene = 1000
+	SceneNoScene      Scene = 0
+	SceneOcean        Scene = 1
+	SceneRomance      Scene = 2
+	SceneSunset       Scene = 3
+	SceneParty        Scene = 4
+	SceneFireplace    Scene = 5
+	SceneCozy         Scene = 6
+	SceneForest       Scene = 7
+	ScenePastelColors Scene = 8
+	SceneWakeUp       Scene = 9
+	SceneBedtime      Scene = 10
+	SceneWarmWhite    Scene = 11
+	SceneDaylight     Scene = 12
+	SceneCoolWhite    Scene = 13
+	SceneNightLight   Scene = 14
+	SceneFocus        Scene = 15
+	SceneRelax        Scene = 16
+	SceneTrueColors   Scene = 17
+	SceneTVTime       Scene = 18
+	ScenePlantgrowth  Scene = 19
+	SceneSpring       Scene = 20
+	SceneSummer       Scene = 21
+	SceneFall         Scene = 22
+	SceneDeepdive     Scene = 23
+	SceneJungle       Scene = 24
+	SceneMojito       Scene = 25
+	SceneClub         Scene = 26
+	SceneChristmas    Scene = 27
+	SceneHalloween    Scene = 28
+	SceneCandlelight  Scene = 29
+	SceneGoldenWhite  Scene = 30
+	ScenePulse        Scene = 31
+	SceneSteampunk    Scene = 32
+	SceneRhythm       Scene = 1000
 )
 
 // DevInfo contains the bulb's device information.
@@ -78,18 +79,58 @@ type Pilot struct {
 	Mac        string `json:"mac,omitempty"`        // Mac address.
 	RSSI       int    `json:"rssi,omitempty"`       // Signal strength.
 	Src        string `json:"src,omitempty"`        // No idea.
-	Speed      uint   `json:"speed,omitempty"`      // Color changing speed in percent. This only seems to influence the scenes.
-	Temp       uint   `json:"temp,omitempty"`       // Color temperature in Kelvin.
-	SchdPsetID uint   `json:"schdPsetId,omitempty"` // Rhythm ID of the room.
-	SceneID    scene  `json:"sceneId,omitempty"`    // The scene ID.
+	Speed      *uint  `json:"speed,omitempty"`      // Color changing speed in percent. This only seems to influence the scene playback speed.
+	Temp       *uint  `json:"temp,omitempty"`       // Color temperature in Kelvin.
+	SchdPsetID *uint  `json:"schdPsetId,omitempty"` // Not sure. Scheduled preset?
+	SceneID    *Scene `json:"sceneId,omitempty"`    // The scene ID.
 
-	State   bool  `json:"state"`   // On off state.
-	R       uint8 `json:"r"`       // Red luminance in range 0-255.
-	G       uint8 `json:"g"`       // Green luminance range 0-255.
-	B       uint8 `json:"b"`       // Blue luminance range 0-255.
-	CW      uint8 `json:"c"`       // Cold white luminance range 0-255.
-	WW      uint8 `json:"w"`       // Warm white luminance range 0-255.
-	Dimming uint  `json:"dimming"` // Dimming value in percent.
+	State   bool   `json:"state"`       // On off state.
+	R       *uint8 `json:"r,omitempty"` // Red luminance in range 0-255.
+	G       *uint8 `json:"g,omitempty"` // Green luminance range 0-255.
+	B       *uint8 `json:"b,omitempty"` // Blue luminance range 0-255.
+	CW      *uint8 `json:"c,omitempty"` // Cold white luminance range 0-255.
+	WW      *uint8 `json:"w,omitempty"` // Warm white luminance range 0-255.
+	Dimming uint   `json:"dimming"`     // Dimming value in percent.
+}
+
+// WithLightOff returns a copy of the pilot with the light turned off.
+func (p Pilot) WithLightOff() Pilot {
+	p.State = false
+	return p
+}
+
+// WithRGBW returns a copy of the pilot with the given color values set.
+// This will reset any other competing value like scene ID or temperature.
+func (p Pilot) WithRGBW(r, g, b, cw, ww uint8, dimming uint) Pilot {
+	p.State, p.Dimming = true, dimming
+	p.SceneID, p.Temp, p.Speed = nil, nil, nil
+	p.R, p.G, p.B, p.CW, p.WW = &r, &g, &b, &cw, &ww
+	return p
+}
+
+// WithScene returns a copy of the pilot with the given scene set.
+// This will reset any other competing value like RGB values.
+func (p Pilot) WithScene(s Scene, temp uint, speed uint, dimming uint) Pilot {
+	p.State, p.Dimming = true, dimming
+	p.R, p.G, p.B, p.CW, p.WW = nil, nil, nil, nil, nil
+	p.SceneID, p.Temp, p.Speed = &s, &temp, &speed
+	return p
+}
+
+// HasRGBW returns true, if the pilot contains RGBW values, including all Zero values.
+func (p Pilot) HasRGBW() bool {
+	if p.R != nil && p.G != nil && p.B != nil && p.CW != nil && p.WW != nil {
+		return true
+	}
+	return false
+}
+
+// HasScene returns true, if the pilot contains a scene value, including SceneNoScene.
+func (p Pilot) HasScene() bool {
+	if p.SceneID != nil && p.Temp != nil && p.Speed != nil {
+		return true
+	}
+	return false
 }
 
 type SystemConfig struct {
@@ -108,12 +149,13 @@ type SystemConfig struct {
 }
 
 type UserConfig struct {
-	FadeIn    uint `json:"fadeIn"`
-	FadeOut   uint `json:"fadeOut"`
-	DFTDim    uint `json:"dftDim"`
-	OpMode    int  `json:"opMode"`
-	PO        bool `json:"po"`
-	TapSensor int  `json:"tapSensor"`
+	FadeIn     uint `json:"fadeIn"`     // Fade-in time in milliseconds.
+	FadeOut    uint `json:"fadeOut"`    // Fade-out time in milliseconds.
+	DFTDim     uint `json:"dftDim"`     // Not sure. Default dimming value in percent?
+	OpMode     int  `json:"opMode"`     // No idea.
+	PO         bool `json:"po"`         // No idea.
+	MinDimming uint `json:"minDimming"` // Minimal dimming value in percent.
+	TapSensor  int  `json:"tapSensor"`  // Not sure. Amount of tap sensors?
 }
 
 // method represents a query method.
@@ -150,12 +192,12 @@ const (
 
 	// Sync stuff.
 
-	methodSyncAlarm          method = "syncAlarm"
+	/*methodSyncAlarm          method = "syncAlarm"
 	methodSyncBroadcastPilot method = "syncBroadcastPilot"
 	methodSyncConfig         method = "syncConfig"
 	methodSyncSchdPset       method = "syncSchdPset"
 	methodSyncSystemConfig   method = "syncSystemConfig"
-	methodSyncUserConfig     method = "syncUserConfig"
+	methodSyncUserConfig     method = "syncUserConfig"*/
 )
 
 // query is the data structure that holds any query.
@@ -166,22 +208,15 @@ type query struct {
 	Params interface{} `json:"params,omitempty"` // The parameters to transmit.
 }
 
-// responsePilot represents the response obtained from the bulb when querying METHOD_GET_PILOT.
-type responsePilot struct {
-	Method method `json:"method"`
-	Env    string `json:"env,omitempty"`
-	State  Pilot  `json:"result,omitempty"`
-}
-
 // response represents a general response with status code, error message and a result field.
 type response struct {
 	Method method      `json:"method"`
 	Env    string      `json:"env,omitempty"`
 	Result interface{} `json:"result,omitempty"`
 
-	Error struct {
-		Code    int64  `json:"code,omitempty"`
-		Message string `json:"message,omitempty"`
+	Error *struct {
+		Code    int64  `json:"code"`
+		Message string `json:"message"`
 	} `json:"error,omitempty"`
 }
 
@@ -193,8 +228,8 @@ func (r response) Check(m method) error {
 	if r.Method != m {
 		return fmt.Errorf("response is for different method. Got %q, want %q", r.Method, m)
 	}
-	if r.Error.Code != 0 {
-		return fmt.Errorf("light bulb returned code %d: %v", r.Error.Code, r.Error.Message)
+	if r.Error != nil {
+		return fmt.Errorf("light bulb returned error %d: %v", r.Error.Code, r.Error.Message)
 	}
 	/*if !r.Result.Success {
 		return fmt.Errorf("light bulb signalled that the operation failed")
@@ -275,7 +310,7 @@ func (l *Light) GetDeviceInfo() (DevInfo, error) {
 	return result, r.Check(q.Method) // This may return data in case of an error.
 }
 
-// GetFavs queries the bulb for its user configuration.
+// GetFavs queries the bulb for its favorites/presets.
 func (l *Light) GetFavs() (Favs, error) {
 	q := query{
 		Method: methodGetFavs,
@@ -361,6 +396,8 @@ func (l *Light) jsonQuery(q query, r interface{}) error {
 	if err != nil {
 		return err
 	}
+
+	//log.Printf("%q query: %q", q.Method, string(data))
 
 	responseData, err := l.rawSend(data)
 	if err != nil {
