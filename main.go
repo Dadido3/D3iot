@@ -1,13 +1,43 @@
+// Copyright (c) 2021 David Vogel
+//
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
+
 package main
 
 import (
-	"D3domotics/light/wiz"
 	"log"
 	"time"
+
+	"github.com/Dadido3/D3iot/light/wiz"
 )
 
 func main() {
 	light := wiz.NewLight("192.168.1.174:38899")
+
+	if err := light.Pulse(50, 100*time.Millisecond); err != nil {
+		log.Printf("light.Pulse() failed: %v", err)
+	}
+
+	/*if result, err := light.GetUserConfig(); err != nil {
+		log.Printf("query failed: %v", err)
+	} else {
+		log.Printf("%#v", result)
+	}*/
+
+	/*if info, err := light.GetDeviceInfo(); err != nil {
+		log.Printf("light.GetDeviceInfo failed: %v", err)
+	} else {
+		fmt.Printf("%#v", info)
+	}*/
+
+	/*if err := light.SetPilot(wiz.Pilot{}.WithRGBW(50, 0, 0, 0, 00, 100)); err != nil {
+		log.Printf("light.SetPilot() failed: %v", err)
+	}*/
+
+	/*if err := light.SetPilot(wiz.Pilot{}.WithScene(wiz.SceneClub, 6000, 50, 50)); err != nil {
+		log.Printf("light.SetPilot() failed: %v", err)
+	}*/
 
 	// Interpolate between these pilots.
 	pilots := []wiz.Pilot{
@@ -21,24 +51,6 @@ func main() {
 		wiz.Pilot{}.WithRGBW(30, 0, 0, 10, 30, 100),
 		wiz.Pilot{}.WithRGBW(10, 0, 0, 0, 50, 100),*/
 	}
-
-	/*if err := light.Pulse(1000, 100*time.Millisecond); err != nil {
-		log.Printf("light.Pulse() failed: %v", err)
-	}*/
-
-	/*if result, err := light.GetUserConfig(); err != nil {
-		log.Printf("query failed: %v", err)
-	} else {
-		log.Printf("%#v", result)
-	}*/
-
-	/*if err := light.SetPilot(wiz.Pilot{}.WithRGBW(50, 0, 0, 0, 00, 100)); err != nil {
-		log.Printf("light.SetPilot() failed: %v", err)
-	}*/
-
-	/*if err := light.SetPilot(wiz.Pilot{}.WithScene(wiz.SceneNoScene, 6000, 50, 50)); err != nil {
-		log.Printf("light.SetPilot() failed: %v", err)
-	}*/
 
 	// Init first pilot for blending/mixing.
 	p1 := pilots[0]

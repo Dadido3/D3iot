@@ -1,5 +1,6 @@
-# D3domotics
+# D3iot
 
-A (maybe soon to be) software suite for simple home automation.
-Or maybe just a lib, nothing is set in stone yet.
-The name will probably change and is a placeholder for now.
+A software package to handle IoT devices.
+
+Right now this repository doesn't contain much that can run on its own.
+If you are looking for ways to communicate with WiZ light bulbs, take a look at the sub-package [light/wiz/](light/wiz/).

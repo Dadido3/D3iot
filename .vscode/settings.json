@@ -1,6 +1,6 @@
 {
     "cSpell.words": [
-        "domotics",
+        "Dadido",
         "Favs",
         "Mojito",
         "Pset",
@@ -8,6 +8,10 @@
         "RGBW",
         "rssi",
         "schd",
-        "unmarshals"
-    ]
+        "unmarshals",
+        "Vogel"
+    ],
+    "licenser.author": "David Vogel",
+    "licenser.license": "MIT",
+    "licenser.projectName": "D3iot"
 }
