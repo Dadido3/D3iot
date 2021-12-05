@@ -21,13 +21,21 @@ import "github.com/Dadido3/D3iot/light/wiz"
 First you have add your light bulb to your network, which for now can only be done via the WiZ app over bluetooth.
 Once the device has been connected to your Wi-Fi, you can use the app to retrieve the light's IP.
 
-Finally, to connect to your device, use
+To connect to your device via its IP, use
 
 ``` go
 light := wiz.NewLight("192.168.1.123:38899")
 ```
 
 where you have to replace `192.168.1.123` with the corresponding IP of your device.
+
+Alternatively, you can use the DHCP name of the device to connect. As example use
+
+``` go
+light := wiz.NewLight("wiz-123abc:38899")
+```
+
+where you have to replace `123abc` with the 6 last digits of the device's MAC-Address.
 
 ### Read device information
 
