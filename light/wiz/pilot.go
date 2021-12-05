@@ -71,9 +71,9 @@ func NewPilotWithRGBW(dimming uint, r, g, b, cw, ww uint8) Pilot {
 	}
 }
 
-// NewPilotWithTemperature returns a pilot with the given color temperature values.
+// NewPilotWithTemp returns a pilot with the given color temperature values.
 // No color transformation is done, all values are passed directly to the device.
-func NewPilotWithTemperature(dimming uint, temperature uint) Pilot {
+func NewPilotWithTemp(dimming, temperature uint) Pilot {
 	return Pilot{
 		State:   true,
 		Dimming: &dimming,
@@ -141,8 +141,17 @@ func (p Pilot) WithRGBW(r, g, b, cw, ww uint8) Pilot {
 	return p
 }
 
-// WithScene returns a copy of the pilot with the given scene set.
+// WithTemp returns a copy of the pilot with the given color temperature set.
 // This will not change the on/off state or dimming value of the pilot.
+// This will reset any other competing value like scene ID or RGBW values.
+func (p Pilot) WithTemp(temp uint) Pilot {
+	p.Scene, p.Temp, p.Speed = nil, &temp, nil
+	p.R, p.G, p.B, p.CW, p.WW = nil, nil, nil, nil, nil
+	return p
+}
+
+// WithScene returns a copy of the pilot with the given scene set.
+// This will not change the on/off state of the pilot.
 // This will reset any other competing value like RGB values.
 func (p Pilot) WithScene(s Scene, speed uint) Pilot {
 	p.R, p.G, p.B, p.CW, p.WW, p.Temp = nil, nil, nil, nil, nil, nil
@@ -154,11 +163,15 @@ func (p Pilot) WithScene(s Scene, speed uint) Pilot {
 		p.Speed = nil
 	}
 
+	if !s.NeedsDimming() {
+		p.Dimming = nil
+	}
+
 	return p
 }
 
 // HasRGB returns true, if the pilot contains RGB values, including all Zero values.
-// This makes sure that you can dereference the fields R, G, and B.
+// This ensures that you can dereference the R, G, and B fields.
 func (p Pilot) HasRGB() bool {
 	if p.R != nil && p.G != nil && p.B != nil {
 		return true
@@ -167,7 +180,7 @@ func (p Pilot) HasRGB() bool {
 }
 
 // HasRGBW returns true, if the pilot contains RGBW values, including all Zero values.
-// This makes sure that you can dereference the fields R, G, B, CW, and WW.
+// This ensures that you can dereference the R, G, B, CW, and WW fields.
 func (p Pilot) HasRGBW() bool {
 	if p.R != nil && p.G != nil && p.B != nil && p.CW != nil && p.WW != nil {
 		return true
@@ -176,25 +189,25 @@ func (p Pilot) HasRGBW() bool {
 }
 
 // HasScene returns true, if the pilot contains a scene value.
-// This makes sure that you can dereference the field Scene.
+// This ensures that you can dereference the Scene field.
 func (p Pilot) HasScene() bool {
 	return p.Scene != nil
 }
 
 // HasTemp returns true, if the pilot contains a color temperature value.
-// This makes sure that you can dereference the field Temp.
+// This ensures that you can dereference the Temp field.
 func (p Pilot) HasTemp() bool {
 	return p.Temp != nil
 }
 
 // HasSpeed returns true, if the pilot contains a speed value.
-// This makes sure that you can dereference the field Temp.
+// This ensures that you can dereference the Speed field.
 func (p Pilot) HasSpeed() bool {
 	return p.Speed != nil
 }
 
 // HasDimming returns true, if the pilot contains a dimming value.
-// This makes sure that you can dereference the field Dimming.
+// This ensures that you can dereference the Dimming field.
 func (p Pilot) HasDimming() bool {
 	return p.Dimming != nil
 }

@@ -143,7 +143,7 @@ func (s Scene) HasSpeed() bool {
 	return s.rxSpeed
 }
 
-// HasTemperature returns true if the device sends a color temperature along with the scene in the pilot.
-func (s Scene) HasTemperature() bool {
+// HasTemp returns true if the device sends a color temperature along with the scene in the pilot.
+func (s Scene) HasTemp() bool {
 	return s.rxTemp
 }

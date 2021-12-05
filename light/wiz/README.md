@@ -40,15 +40,20 @@ fmt.Printf("%#v", info)
 
 The pilot contains all the settings that are related to the device's light output.
 This is the "raw" way to control the device, no color transformation is done.
-You can either use predefined scenes, or RGBW values.
+You can either use predefined scenes, a color temperature, or RGBW values.
 
 ``` go
-pilot := wiz.Pilot{}.WithScene(wiz.SceneClub, 6000, 50, 50)
+pilot := wiz.NewPilotWithScene(wiz.SceneClub, 50, 100) // 50 % dimming value, 100 % speed value.
 err := light.SetPilot(pilot)
 ```
 
 ``` go
-pilot := wiz.Pilot{}.WithRGBW(50, 0, 0, 0, 0, 100) // R, G, B, cold white, warm white, dimming value
+pilot := wiz.NewPilotWithTemp(4000, 80) // Color temperature of 4000 K value, 80 % dimming value.
+err := light.SetPilot(pilot)
+```
+
+``` go
+pilot := wiz.NewPilotWithRGBW(100, 50, 0, 0, 0, 0) // 100 % dimming value and the R, G, B, cold white, warm white values.
 err := light.SetPilot(pilot)
 ```
 
@@ -58,6 +63,7 @@ To query the currently active pilot and retrieve the RGBW values, use
 
 ``` go
 pilot, err := light.GetPilot()
+fmt.Printf("%v", pilot)
 
 if pilot.HasRGBW() {
     r, g, b, cw, ww := *pilot.R, *pilot.G, *pilot.B, *pilot.CW, *pilot.WW
