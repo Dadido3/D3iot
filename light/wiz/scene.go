@@ -104,19 +104,19 @@ func (s *Scene) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	// Special case for scene ID 0.
-	// The device sends that scene ID, instead of leaving the scene field empty.
-	if id == 0 {
-		s.id = 0
-		return nil
-	}
-
+	// Write data of known scene, if there is one.
 	if scene, ok := scenes[id]; ok {
 		*s = scene
 		return nil
 	}
 
-	return fmt.Errorf("undefined scene ID %d", id) // TODO: Consider writing an empty scene with the ID instead of an error
+	// Scene not found, generate new general scene.
+	*s = Scene{
+		id:   id,
+		name: "Unknown",
+	}
+
+	return nil
 }
 
 func (s Scene) String() string {
