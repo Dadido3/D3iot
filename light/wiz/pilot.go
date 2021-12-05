@@ -123,6 +123,12 @@ func (p Pilot) WithLightOn() Pilot {
 	return p
 }
 
+// WithLightToggled returns a copy of the pilot with the light toggled.
+func (p Pilot) WithLightToggled() Pilot {
+	p.State = !p.State
+	return p
+}
+
 // WithRGB returns a copy of the pilot with the given color values set.
 // This will not change the on/off state or dimming value of the pilot.
 // This will reset any other competing value like scene ID or temperature.
