@@ -158,8 +158,17 @@ func (p Pilot) WithScene(s Scene, speed uint) Pilot {
 }
 
 // HasRGB returns true, if the pilot contains RGB values, including all Zero values.
-// TODO: Replace with something better
+// This makes sure that you can dereference the fields R, G, and B.
 func (p Pilot) HasRGB() bool {
+	if p.R != nil && p.G != nil && p.B != nil {
+		return true
+	}
+	return false
+}
+
+// HasRGBW returns true, if the pilot contains RGBW values, including all Zero values.
+// This makes sure that you can dereference the fields R, G, B, CW, and WW.
+func (p Pilot) HasRGBW() bool {
 	if p.R != nil && p.G != nil && p.B != nil && p.CW != nil && p.WW != nil {
 		return true
 	}
@@ -167,9 +176,27 @@ func (p Pilot) HasRGB() bool {
 }
 
 // HasScene returns true, if the pilot contains a scene value.
-// TODO: Replace with something better
+// This makes sure that you can dereference the field Scene.
 func (p Pilot) HasScene() bool {
 	return p.Scene != nil
+}
+
+// HasTemp returns true, if the pilot contains a color temperature value.
+// This makes sure that you can dereference the field Temp.
+func (p Pilot) HasTemp() bool {
+	return p.Temp != nil
+}
+
+// HasSpeed returns true, if the pilot contains a speed value.
+// This makes sure that you can dereference the field Temp.
+func (p Pilot) HasSpeed() bool {
+	return p.Speed != nil
+}
+
+// HasDimming returns true, if the pilot contains a dimming value.
+// This makes sure that you can dereference the field Dimming.
+func (p Pilot) HasDimming() bool {
+	return p.Dimming != nil
 }
 
 // UnmarshalJSON implements the JSON unmarshaler interface.

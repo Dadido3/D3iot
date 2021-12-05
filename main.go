@@ -108,7 +108,7 @@ func main() {
 			for i := 0; i < steps; i++ {
 
 				factor1, factor2 := 1-float64(i)/float64(steps), float64(i)/float64(steps)
-				if p1.HasRGB() && p2.HasRGB() {
+				if p1.HasRGBW() && p2.HasRGBW() && p1.HasDimming() && p2.HasDimming() {
 
 					r := uint8(float64(*p1.R)*factor1 + float64(*p2.R)*factor2)
 					g := uint8(float64(*p1.G)*factor1 + float64(*p2.G)*factor2)
@@ -117,7 +117,7 @@ func main() {
 					ww := uint8(float64(*p1.WW)*factor1 + float64(*p2.WW)*factor2)
 					dimming := uint(float64(*p1.Dimming)*factor1 + float64(*p2.Dimming)*factor2)
 
-					mixedPilot := wiz.Pilot{State: true}.WithDimming(dimming).WithRGBW(r, g, b, cw, ww)
+					mixedPilot := wiz.NewPilotWithRGBW(dimming, r, g, b, cw, ww)
 
 					if err := light.SetPilot(mixedPilot); err != nil {
 						log.Printf("light.SetPilot() failed: %v", err)
