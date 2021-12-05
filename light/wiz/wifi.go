@@ -8,7 +8,6 @@ package wiz
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"time"
 )
@@ -311,7 +310,7 @@ func (l *Light) jsonQuery(q query, r interface{}) error {
 		return err
 	}
 
-	log.Printf("%q response: %q", q.Method, string(responseData))
+	//log.Printf("%q response: %q", q.Method, string(responseData))
 
 	if err := json.Unmarshal(responseData, &r); err != nil {
 		return err
@@ -332,18 +331,30 @@ func (l *Light) rawSend(data []byte) ([]byte, error) {
 	}
 	defer conn.Close()
 
-	conn.SetWriteDeadline(time.Now().Add(250 * time.Millisecond))
-	if _, err := conn.Write(data); err != nil {
-		return nil, err
+	// Function that sends the given data, and tries to receive the answer packet.
+	sendFunc := func() ([]byte, error) {
+		conn.SetDeadline(time.Now().Add(l.deadline))
+		if _, err := conn.Write(data); err != nil {
+			return nil, err
+		}
+
+		buf := make([]byte, 1024)
+
+		n, err := conn.Read(buf)
+		if err != nil {
+			return nil, err
+		}
+
+		return buf[:n], nil
 	}
 
-	buf := make([]byte, 1024)
-
-	conn.SetReadDeadline(time.Now().Add(250 * time.Millisecond))
-	n, err := conn.Read(buf)
-	if err != nil {
-		return nil, err
+	// Try to communicate, at most l.retries + 1 times.
+	for i := uint(0); i <= l.retries; i++ {
+		var res []byte
+		if res, err = sendFunc(); err == nil {
+			return res, err
+		}
 	}
 
-	return buf[:n], nil
+	return nil, err
 }

@@ -54,20 +54,20 @@ func main() {
 		//Scene:   &scene,
 	}*/
 	//pilot := wiz.NewPilotWithRGBW(100, 255, 0, 0, 0, 0)
-	pilot := wiz.NewPilotWithScene(wiz.SceneCozy, 20, 0)
+	/*pilot := wiz.NewPilotWithScene(wiz.SceneCozy, 20, 0)
 	if err := light.SetPilot(pilot); err != nil {
 		log.Printf("light.SetPilot() failed: %v", err)
 	}
-	log.Printf("Set pilot to %v", pilot)
+	log.Printf("Set pilot to %v", pilot)*/
 
-	for {
+	/*for {
 		if result, err := light.GetPilot(); err != nil {
 			log.Printf("query failed: %v", err)
 		} else {
 			log.Printf("%s", result)
 		}
 		time.Sleep(1 * time.Second)
-	}
+	}*/
 
 	/*if err := light.SetPilot(wiz.Pilot{}.WithRGBW(50, 0, 0, 0, 00, 100)); err != nil {
 		log.Printf("light.SetPilot() failed: %v", err)
@@ -77,31 +77,31 @@ func main() {
 		log.Printf("light.SetPilot() failed: %v", err)
 	}*/
 
-	if true {
+	/*if true {
 		return
-	}
+	}*/
 
 	// Interpolate between these pilots.
 	pilots := []wiz.Pilot{
-		//wiz.Pilot{State: true}.WithDimming(100).WithRGBW(0, 0, 0, 0, 45),    // Warm white with a good CRI.
-		//wiz.Pilot{State: true}.WithDimming(100).WithRGBW(0, 0, 0, 45, 0),    // Cold white with a good CRI.
-		//wiz.Pilot{State: true}.WithDimming(100).WithRGBW(80, 100, 40, 0, 0), // Same cold white simlated with RGB colors. Bad CRI.
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 0, 0, 45),    // Warm white with a good CRI.
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 0, 45, 0),    // Cold white with a good CRI.
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(80, 100, 40, 0, 0), // Same cold white simlated with RGB colors. Bad CRI.
 
 		// "Fire" sequence.
-		wiz.Pilot{State: true}.WithDimming(100).WithRGBW(0, 0, 0, 0, 40),
-		wiz.Pilot{State: true}.WithDimming(100).WithRGBW(20, 0, 0, 0, 40),
-		wiz.Pilot{State: true}.WithDimming(100).WithRGBW(30, 0, 0, 10, 30),
-		wiz.Pilot{State: true}.WithDimming(100).WithRGBW(10, 0, 0, 0, 50),
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 0, 0, 40),
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(20, 0, 0, 0, 40),
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(30, 0, 0, 10, 30),
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(10, 0, 0, 0, 50),
 
-		//wiz.Pilot{State: true}.WithDimming(100).WithRGBW(255, 0, 0, 0, 0),
-		//wiz.Pilot{State: true}.WithDimming(100).WithRGBW(0, 255, 0, 0, 0),
-		//wiz.Pilot{State: true}.WithDimming(100).WithRGBW(0, 0, 255, 0, 0),
+		wiz.NewPilot(true).WithDimming(100).WithRGBW(255, 0, 0, 0, 0),
+		wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 255, 0, 0, 0),
+		wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 255, 0, 0),
 	}
 
 	// Init first pilot for blending/mixing.
 	p1 := pilots[0]
 
-	steps := 10
+	steps := 100
 
 	for {
 		for _, p2 := range pilots {
@@ -123,7 +123,7 @@ func main() {
 						log.Printf("light.SetPilot() failed: %v", err)
 					}
 				}
-				time.Sleep(100 * time.Millisecond)
+				time.Sleep(10 * time.Millisecond)
 			}
 			p1 = p2
 		}

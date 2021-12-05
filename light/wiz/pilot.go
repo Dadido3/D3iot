@@ -38,10 +38,10 @@ type Pilot struct {
 	WW *uint8 `json:"w,omitempty"` // Warm white luminance range 0-255.
 }
 
-// NewPilot returns a pilot with light turned off.
-func NewPilot() Pilot {
+// NewPilot returns a pilot with the given light state.
+func NewPilot(state bool) Pilot {
 	return Pilot{
-		State: false,
+		State: state,
 	}
 }
 
