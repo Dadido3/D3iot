@@ -325,6 +325,9 @@ func (l *Light) jsonQuery(q query, r interface{}) error {
 // This assumes that there is only a single connection between the local and remote address.
 // If there is more communication going on, the response might be something unexpected.
 func (l *Light) rawSend(data []byte) ([]byte, error) {
+	l.connMutex.Lock()
+	defer l.connMutex.Unlock()
+
 	conn, err := net.Dial("udp", l.address)
 	if err != nil {
 		return nil, err

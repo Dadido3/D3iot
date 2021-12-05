@@ -8,14 +8,16 @@ package wiz
 import (
 	"fmt"
 	"image/color"
+	"sync"
 	"time"
 )
 
 type Light struct {
 	address string
 
-	deadline time.Duration // Default deadline for a whole communcation action (sending and receiving).
-	retries  uint          // Number of retries when the deadline got exceeded.
+	deadline  time.Duration // Default deadline for a whole communcation action (sending and receiving).
+	retries   uint          // Number of retries when the deadline got exceeded.
+	connMutex sync.Mutex
 }
 
 // NewLight returns an object that represents a single WiZ light accessible by the given address.
