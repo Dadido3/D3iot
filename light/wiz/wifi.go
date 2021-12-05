@@ -8,6 +8,7 @@ package wiz
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net"
 	"time"
 )
@@ -23,7 +24,7 @@ type DevInfo struct {
 // Favs contains the bulb's favorite settings.
 // There can be 4 favorites.
 type Favs struct {
-	Favs [4][7]int `json:"favs"` // The first entry of each favorite entry is the scene ID.
+	Favs [4][7]int `json:"favs"` // The first entry of each favorite entry is the scene ID. Last entry is the color temperature.
 	Opts [4][]int  `json:"opts"` // No idea.
 }
 
@@ -31,7 +32,7 @@ type SystemConfig struct {
 	Mac         string `json:"mac"`
 	HomeID      uint   `json:"homeId"`
 	RoomID      uint   `json:"roomId"`
-	Rgn         string `json:"rgn"` // Region, e.g. "eu".
+	Region      string `json:"rgn"` // Region, e.g. "eu".
 	ModuleName  string `json:"moduleName"`
 	FWVersion   string `json:"fwVersion"`
 	GroupID     uint   `json:"groupId"`
@@ -147,7 +148,9 @@ func (l *Light) Pulse(delta int, duration time.Duration) error {
 	}
 
 	var r response
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return err
+	}
 
 	// Check if the response contains any error code.
 	return r.Check(q.Method)
@@ -162,7 +165,9 @@ func (l *Light) Reboot() error {
 	}
 
 	var r response
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return err
+	}
 
 	// Check if the response contains any error code.
 	return r.Check(q.Method)
@@ -177,7 +182,9 @@ func (l *Light) SetPilot(p Pilot) error {
 	}
 
 	var r response
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return err
+	}
 
 	return r.Check(q.Method)
 }
@@ -193,7 +200,9 @@ func (l *Light) GetDeviceInfo() (DevInfo, error) {
 
 	var r response
 	r.Result = &result
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return DevInfo{}, err
+	}
 
 	return result, r.Check(q.Method) // This may return data in case of an error.
 }
@@ -209,7 +218,9 @@ func (l *Light) GetFavs() (Favs, error) {
 
 	var r response
 	r.Result = &result
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return Favs{}, err
+	}
 
 	return result, r.Check(q.Method) // This may return data in case of an error.
 }
@@ -225,7 +236,9 @@ func (l *Light) GetPilot() (Pilot, error) {
 
 	var r response
 	r.Result = &result
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return Pilot{}, err
+	}
 
 	return result, r.Check(q.Method) // This may return data in case of an error.
 }
@@ -241,7 +254,9 @@ func (l *Light) GetSystemConfig() (SystemConfig, error) {
 
 	var r response
 	r.Result = &result
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return SystemConfig{}, err
+	}
 
 	return result, r.Check(q.Method) // This may return data in case of an error.
 }
@@ -257,7 +272,9 @@ func (l *Light) GetUserConfig() (UserConfig, error) {
 
 	var r response
 	r.Result = &result
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return UserConfig{}, err
+	}
 
 	return result, r.Check(q.Method) // This may return data in case of an error.
 }
@@ -273,7 +290,9 @@ func (l *Light) GetUserConfig() (UserConfig, error) {
 
 	var r response
 	r.Result = &result
-	l.jsonQuery(q, &r)
+	if err := l.jsonQuery(q, &r); err != nil {
+		return WifiConfig{}, err
+	}
 
 	return result, r.Check(q.Method) // This may return data in case of an error.
 }*/
@@ -292,7 +311,7 @@ func (l *Light) jsonQuery(q query, r interface{}) error {
 		return err
 	}
 
-	//log.Printf("%q response: %q", q.Method, string(responseData))
+	log.Printf("%q response: %q", q.Method, string(responseData))
 
 	if err := json.Unmarshal(responseData, &r); err != nil {
 		return err
@@ -313,14 +332,14 @@ func (l *Light) rawSend(data []byte) ([]byte, error) {
 	}
 	defer conn.Close()
 
-	conn.SetWriteDeadline(time.Now().Add(1 * time.Second))
+	conn.SetWriteDeadline(time.Now().Add(250 * time.Millisecond))
 	if _, err := conn.Write(data); err != nil {
 		return nil, err
 	}
 
 	buf := make([]byte, 1024)
 
-	conn.SetReadDeadline(time.Now().Add(1 * time.Second))
+	conn.SetReadDeadline(time.Now().Add(250 * time.Millisecond))
 	n, err := conn.Read(buf)
 	if err != nil {
 		return nil, err
