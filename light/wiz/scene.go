@@ -26,15 +26,15 @@ var (
 	SceneSunset       = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 3, name: "Sunset"}          //
 	SceneParty        = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 4, name: "Party"}           //
 	SceneFireplace    = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 5, name: "Fireplace"}       //
-	SceneCozy         = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: false, id: 6, name: "Cozy"}          //
+	SceneCozy         = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: false, rxTemp: false, id: 6, name: "Cozy"}           //
 	SceneForest       = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 7, name: "Forest"}          //
 	ScenePastelColors = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 8, name: "PastelColors"}    //
-	SceneWakeUp       = Scene{txDimming: false, txSpeed: false, rxDimming: false, rxSpeed: false, rxTemp: false, id: 9, name: "WakeUp"}      // Takes 30 min to complete. No control over anything.
+	SceneWakeUp       = Scene{txDimming: true, txSpeed: false, rxDimming: false, rxSpeed: false, rxTemp: false, id: 9, name: "WakeUp"}       // Takes 30 min to complete. // TODO: Check if the dimming value has any influence on it.
 	SceneBedtime      = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: false, id: 10, name: "Bedtime"}      // Takes 30 min to complete.
 	SceneWarmWhite    = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: true, id: 11, name: "WarmWhite"}     //
 	SceneDaylight     = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: true, id: 12, name: "Daylight"}      //
 	SceneCoolWhite    = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: true, id: 13, name: "CoolWhite"}     //
-	SceneNightLight   = Scene{txDimming: false, txSpeed: false, rxDimming: false, rxSpeed: false, rxTemp: false, id: 14, name: "NightLight"} // There is no control over anything.
+	SceneNightLight   = Scene{txDimming: false, txSpeed: false, rxDimming: false, rxSpeed: false, rxTemp: false, id: 14, name: "NightLight"} // Just a dim light, there is no control over anything.
 	SceneFocus        = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: false, id: 15, name: "Focus"}        //
 	SceneRelax        = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: false, id: 16, name: "Relax"}        //
 	SceneTrueColors   = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: false, id: 17, name: "TrueColors"}   //
@@ -49,47 +49,61 @@ var (
 	SceneClub         = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 26, name: "Club"}           //
 	SceneChristmas    = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 27, name: "Christmas"}      //
 	SceneHalloween    = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 28, name: "Halloween"}      //
-	SceneCandlelight  = Scene{txDimming: true, txSpeed: false, rxDimming: true, rxSpeed: false, rxTemp: false, id: 29, name: "Candlelight"}  //
+	SceneCandlelight  = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: false, rxTemp: false, id: 29, name: "Candlelight"}   //
 	SceneGoldenWhite  = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 30, name: "GoldenWhite"}    //
 	ScenePulse        = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 31, name: "Pulse"}          //
 	SceneSteampunk    = Scene{txDimming: true, txSpeed: true, rxDimming: true, rxSpeed: true, rxTemp: false, id: 32, name: "Steampunk"}      //
-	SceneRhythm       = Scene{txDimming: false, txSpeed: false, rxDimming: false, rxSpeed: false, rxTemp: false, id: 1000, name: "Rhythm"}   // Not tested yet.
 )
 
-var scenes = map[uint]Scene{
-	1:    SceneOcean,
-	2:    SceneRomance,
-	3:    SceneSunset,
-	4:    SceneParty,
-	5:    SceneFireplace,
-	6:    SceneCozy,
-	7:    SceneForest,
-	8:    ScenePastelColors,
-	9:    SceneWakeUp,
-	10:   SceneBedtime,
-	11:   SceneWarmWhite,
-	12:   SceneDaylight,
-	13:   SceneCoolWhite,
-	14:   SceneNightLight,
-	15:   SceneFocus,
-	16:   SceneRelax,
-	17:   SceneTrueColors,
-	18:   SceneTVTime,
-	19:   ScenePlantgrowth,
-	20:   SceneSpring,
-	21:   SceneSummer,
-	22:   SceneFall,
-	23:   SceneDeepdive,
-	24:   SceneJungle,
-	25:   SceneMojito,
-	26:   SceneClub,
-	27:   SceneChristmas,
-	28:   SceneHalloween,
-	29:   SceneCandlelight,
-	30:   SceneGoldenWhite,
-	31:   ScenePulse,
-	32:   SceneSteampunk,
-	1000: SceneRhythm,
+// ScenesList contains a list of all available scenes.
+// The ID doesn't necessarily correspond with the position of the item.
+var ScenesList = []Scene{
+	SceneOcean,
+	SceneRomance,
+	SceneSunset,
+	SceneParty,
+	SceneFireplace,
+	SceneCozy,
+	SceneForest,
+	ScenePastelColors,
+	SceneWakeUp,
+	SceneBedtime,
+	SceneWarmWhite,
+	SceneDaylight,
+	SceneCoolWhite,
+	SceneNightLight,
+	SceneFocus,
+	SceneRelax,
+	SceneTrueColors,
+	SceneTVTime,
+	ScenePlantgrowth,
+	SceneSpring,
+	SceneSummer,
+	SceneFall,
+	SceneDeepdive,
+	SceneJungle,
+	SceneMojito,
+	SceneClub,
+	SceneChristmas,
+	SceneHalloween,
+	SceneCandlelight,
+	SceneGoldenWhite,
+	ScenePulse,
+	SceneSteampunk,
+}
+
+// ScenesMap maps scene IDs to Scene objects.
+var ScenesMap = scenesMapFromList(ScenesList)
+
+// scenesMapFromList returns a map of scenes from the given list of scenes.
+func scenesMapFromList(scenesList []Scene) map[uint]Scene {
+	res := map[uint]Scene{}
+
+	for _, scene := range scenesList {
+		res[scene.id] = scene
+	}
+
+	return res
 }
 
 // MarshalJSON implements the JSON marshaler interface.
@@ -105,7 +119,7 @@ func (s *Scene) UnmarshalJSON(data []byte) error {
 	}
 
 	// Write data of known scene, if there is one.
-	if scene, ok := scenes[id]; ok {
+	if scene, ok := ScenesMap[id]; ok {
 		*s = scene
 		return nil
 	}
@@ -117,6 +131,16 @@ func (s *Scene) UnmarshalJSON(data []byte) error {
 	}
 
 	return nil
+}
+
+// Name returns the name of the scene.
+func (s Scene) Name() string {
+	return s.name
+}
+
+// ID returns the ID of the scene.
+func (s Scene) ID() uint {
+	return s.id
 }
 
 func (s Scene) String() string {
