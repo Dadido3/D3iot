@@ -29,8 +29,6 @@ type Pilot struct {
 	SchdPsetID *uint  `json:"schdPsetId,omitempty"` // Not sure. Scheduled preset?
 	Scene      *Scene `json:"sceneId,omitempty"`    // The scene ID.
 
-	// TODO: The sum of all RGBW values is limited by some value. The device's firmware will try to reduce the light output in some way, figure out how exactly
-
 	R  *uint8 `json:"r,omitempty"` // Red luminance in range 0-255.
 	G  *uint8 `json:"g,omitempty"` // Green luminance range 0-255.
 	B  *uint8 `json:"b,omitempty"` // Blue luminance range 0-255.
@@ -48,8 +46,17 @@ func NewPilot(state bool) Pilot {
 // NewPilotWithRGB returns a pilot with the given RGB values.
 // No color transformation is done, all values are passed directly to the device.
 func NewPilotWithRGB(dimming uint, r, g, b uint8) Pilot {
+	// Edge case, if all values are 0, set the state to false.
+	// Otherwise the lamp will ignore the pilot.
+	var state bool
+	if r > 0 || g > 0 || b > 0 {
+		state = true
+	} else {
+		state = false
+	}
+
 	return Pilot{
-		State:   true,
+		State:   state,
 		Dimming: &dimming,
 		R:       &r,
 		G:       &g,
@@ -60,12 +67,41 @@ func NewPilotWithRGB(dimming uint, r, g, b uint8) Pilot {
 // NewPilotWithRGBW returns a pilot with the given RGBW values.
 // No color transformation is done, all values are passed directly to the device.
 func NewPilotWithRGBW(dimming uint, r, g, b, cw, ww uint8) Pilot {
+	// Edge case, if all values are 0, set the state to false.
+	// Otherwise the lamp will ignore the pilot.
+	var state bool
+	if r > 0 || g > 0 || b > 0 || cw > 0 || ww > 0 {
+		state = true
+	} else {
+		state = false
+	}
+
 	return Pilot{
-		State:   true,
+		State:   state,
 		Dimming: &dimming,
 		R:       &r,
 		G:       &g,
 		B:       &b,
+		CW:      &cw,
+		WW:      &ww,
+	}
+}
+
+// NewPilotWithWhite returns a pilot with the given cold and warm white values.
+// No color transformation is done, all values are passed directly to the device.
+func NewPilotWithWhite(dimming uint, cw, ww uint8) Pilot {
+	// Edge case, if all values are 0, set the state to false.
+	// Otherwise the lamp will ignore the pilot.
+	var state bool
+	if cw > 0 || ww > 0 {
+		state = true
+	} else {
+		state = false
+	}
+
+	return Pilot{
+		State:   state,
+		Dimming: &dimming,
 		CW:      &cw,
 		WW:      &ww,
 	}
@@ -130,20 +166,44 @@ func (p Pilot) WithLightToggled() Pilot {
 }
 
 // WithRGB returns a copy of the pilot with the given color values set.
-// This will not change the on/off state or dimming value of the pilot.
+// This will change the on off state.
 // This will reset any other competing value like scene ID or temperature.
 func (p Pilot) WithRGB(r, g, b uint8) Pilot {
 	p.Scene, p.Temp, p.Speed = nil, nil, nil
-	p.R, p.G, p.B, p.CW, p.WW = &r, &g, &b, new(uint8), new(uint8)
+	p.R, p.G, p.B, p.CW, p.WW = &r, &g, &b, nil, nil
+	if r > 0 || g > 0 || b > 0 {
+		p.State = true
+	} else {
+		p.State = false
+	}
 	return p
 }
 
 // WithRGBW returns a copy of the pilot with the given color values set.
-// This will not change the on/off state or dimming value of the pilot.
+// This will change the on off state.
 // This will reset any other competing value like scene ID or temperature.
 func (p Pilot) WithRGBW(r, g, b, cw, ww uint8) Pilot {
 	p.Scene, p.Temp, p.Speed = nil, nil, nil
 	p.R, p.G, p.B, p.CW, p.WW = &r, &g, &b, &cw, &ww
+	if r > 0 || g > 0 || b > 0 || cw > 0 || ww > 0 {
+		p.State = true
+	} else {
+		p.State = false
+	}
+	return p
+}
+
+// WithWhite returns a copy of the pilot with the given color values set.
+// This will change the on off state.
+// This will reset any other competing value like scene ID or temperature.
+func (p Pilot) WithWhite(cw, ww uint8) Pilot {
+	p.Scene, p.Temp, p.Speed = nil, nil, nil
+	p.R, p.G, p.B, p.CW, p.WW = nil, nil, nil, &cw, &ww
+	if cw > 0 || ww > 0 {
+		p.State = true
+	} else {
+		p.State = false
+	}
 	return p
 }
 
@@ -189,6 +249,15 @@ func (p Pilot) HasRGB() bool {
 // This ensures that you can dereference the R, G, B, CW, and WW fields.
 func (p Pilot) HasRGBW() bool {
 	if p.R != nil && p.G != nil && p.B != nil && p.CW != nil && p.WW != nil {
+		return true
+	}
+	return false
+}
+
+// HasWhite returns true, if the pilot contains cold and warm white values, including all Zero values.
+// This ensures that you can dereference the CW and WW fields.
+func (p Pilot) HasWhite() bool {
+	if p.CW != nil && p.WW != nil {
 		return true
 	}
 	return false

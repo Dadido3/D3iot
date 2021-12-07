@@ -21,6 +21,7 @@ type Product struct {
 	// maxRGBWSum defines the upper limit of the sum of all supported RGBW values (R, G, B, CW, WW) that the device can output.
 	// In case the sum is outside the allowed range [0, MaxRGBWSum], the device will normalize the RGBW values so that their sum is below or at the limit.
 	// This normalization is done in the device, any queried pilot is not affected.
+	// This also happens before the dimming value in the device is applied, therefore a lower dimming value doesn't prevent this non-linearity.
 	maxRGBWSum *uint
 
 	minTemp, maxTemp *uint // The valid color temperatures are described by the interval [MinTemp, MaxTemp].
