@@ -6,6 +6,7 @@
 package wiz
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -56,6 +57,11 @@ func (p Product) RGBWCapability() (r, g, b, cw, ww bool) {
 // ScenesCapability returns a list of scenes that the product supports.
 func (p Product) ScenesCapability() []Scene {
 	return p.deviceClass.ScenesCapability()
+}
+
+// MarshalJSON implements the JSON marshaler interface.
+func (p Product) MarshalJSON() ([]byte, error) {
+	return json.Marshal(p.String())
 }
 
 func (p Product) String() string {

@@ -109,8 +109,8 @@ type response struct {
 	Result interface{} `json:"result,omitempty"`
 
 	Error *struct {
-		Code    int64  `json:"code"`
-		Message string `json:"message"`
+		Code    QueryErrorCode `json:"code"`
+		Message string         `json:"message"`
 	} `json:"error,omitempty"`
 }
 
@@ -123,7 +123,7 @@ func (r response) Check(m method) error {
 		return fmt.Errorf("response is for different method. Got %q, want %q", r.Method, m)
 	}
 	if r.Error != nil {
-		return fmt.Errorf("light bulb returned error %d: %v", r.Error.Code, r.Error.Message)
+		return &ErrQueryFailed{errorCode: r.Error.Code, message: r.Error.Message}
 	}
 	/*if !r.Result.Success {
 		return fmt.Errorf("light bulb signalled that the operation failed")
@@ -303,14 +303,18 @@ func (l *Light) jsonQuery(q query, r interface{}) error {
 		return err
 	}
 
-	//log.Printf("%q query: %q", q.Method, string(data))
+	if l.DebugWriter != nil {
+		fmt.Fprintf(l.DebugWriter, "Query %q: %s\n", q.Method, string(data))
+	}
 
-	responseData, err := l.rawSend(data)
+	responseData, err := l.rawQuery(data)
 	if err != nil {
 		return err
 	}
 
-	//log.Printf("%q response: %q", q.Method, string(responseData))
+	if l.DebugWriter != nil {
+		fmt.Fprintf(l.DebugWriter, "Response to %q: %s\n", q.Method, string(responseData))
+	}
 
 	if err := json.Unmarshal(responseData, &r); err != nil {
 		return err
@@ -319,12 +323,9 @@ func (l *Light) jsonQuery(q query, r interface{}) error {
 	return nil
 }
 
-// rawSend sends the given data to the light bulb via UDP.
-// The answer given by the bulb will be returned as byte slice.
-//
-// This assumes that there is only a single connection between the local and remote address.
-// If there is more communication going on, the response might be something unexpected.
-func (l *Light) rawSend(data []byte) ([]byte, error) {
+// rawQuery sends the given data to the light bulb via UDP.
+// The response given by the bulb will be returned as byte slice.
+func (l *Light) rawQuery(data []byte) ([]byte, error) {
 	l.connMutex.Lock()
 	defer l.connMutex.Unlock()
 
@@ -334,7 +335,7 @@ func (l *Light) rawSend(data []byte) ([]byte, error) {
 	}
 	defer conn.Close()
 
-	// Function that sends the given data, and tries to receive the answer packet.
+	// Function that sends the given data, and tries to receive the response packet.
 	sendFunc := func() ([]byte, error) {
 		conn.SetDeadline(time.Now().Add(l.deadline))
 		if _, err := conn.Write(data); err != nil {

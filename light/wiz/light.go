@@ -8,6 +8,7 @@ package wiz
 import (
 	"fmt"
 	"image/color"
+	"io"
 	"sync"
 	"time"
 )
@@ -17,9 +18,12 @@ type Light struct {
 
 	product *Product // The cached product of the lamp. This will be queried from the device as soon as it is needed.
 
-	deadline  time.Duration // Default deadline for a whole communcation action (sending and receiving).
-	retries   uint          // Number of retries when the deadline got exceeded.
-	connMutex sync.Mutex
+	deadline   time.Duration // Default deadline for a whole communcation action (sending and receiving).
+	retries    uint          // Number of retries when the deadline got exceeded.
+	connMutex  sync.Mutex    // Mutex preventing simultaneous connections to this device.
+	paramMutex sync.Mutex    // Mutex protecting parameters of this object.
+
+	DebugWriter io.Writer // Writer that can be used to debug network communication.
 }
 
 // NewLight returns an object that represents a single WiZ light accessible by the given address.
@@ -35,6 +39,9 @@ func NewLight(address string) *Light {
 
 // Product returns an exact or general product descriptor of the device's abilities and limits.
 func (l *Light) Product() (*Product, error) {
+	l.paramMutex.Lock()
+	defer l.paramMutex.Unlock()
+
 	// Use cached product if possible.
 	if l.product != nil {
 		return l.product, nil
@@ -60,6 +67,9 @@ func (l *Light) Product() (*Product, error) {
 //
 // If you want to cause a re-evaluation, set the product to nil.
 func (l *Light) SetProduct(product *Product) {
+	l.paramMutex.Lock()
+	defer l.paramMutex.Unlock()
+
 	l.product = product
 }
 
