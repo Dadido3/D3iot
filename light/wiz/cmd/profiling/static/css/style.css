@@ -1,0 +1,29 @@
+html {
+    color: white;
+    font-family: sans-serif;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+}
+
+.center-container {
+    padding: 5px;
+    background-color: RGBA(0,0,0,1);
+}
+
+.group {
+    margin: 5px;
+    padding: 5px;
+    background-color: RGBA(255,255,255,0.5);
+}
+
+.value-alert {
+    background-color: red;
+    color: black;
+}
