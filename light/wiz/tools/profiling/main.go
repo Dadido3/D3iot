@@ -98,5 +98,7 @@ func main() {
 		log.Printf("SSR is %f.", ssr)
 	})
 
+	log.Printf("Server is listening at %q. Connect to \"http://localhost:8081\", or whatever port you specified.", *flagServerBind) // TODO: Show correct port.
+
 	log.Fatal(http.ListenAndServe(*flagServerBind, nil))
 }

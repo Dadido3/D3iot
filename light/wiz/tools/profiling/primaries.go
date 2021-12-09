@@ -36,7 +36,7 @@ func (p RGBWPrimaries) Scale(s float64) RGBWPrimaries {
 // Normalize returns p scaled such that value.CIE1931XYZColor(p).Y equals 1.
 //
 // If value is {0, 0, 0, 255, 255}, a light bulb that is fully turned on (Only cold and warm white, no RGB) has a CIE 1931 XYZ color of {something, 1, something}.
-// In this case the illuminant is not D65, but something in between the cold and warm white LED's color.
+// In this case the illuminant is not D65, but some color between the cold and warm white LED.
 func (p RGBWPrimaries) Normalize(value RGBWValue) RGBWPrimaries {
 	c := value.CIE1931XYZColor(p)
 	return p.Scale(1 / c.Y)
@@ -56,7 +56,7 @@ func (p RGBWPrimaries) Values() [15]float64 {
 func CalculatePrimaries(matches map[RGBWValue]CIE1931XYZColor) (RGBWPrimaries, float64, error) {
 
 	if len(matches) < 5 {
-		return RGBWPrimaries{}, 0, fmt.Errorf("Not enough matches to calculate primaries. Got %d, want %d", len(matches), 5)
+		return RGBWPrimaries{}, 0, fmt.Errorf("not enough matches to calculate primaries. Got %d, want %d", len(matches), 5)
 	}
 
 	// Function to optimize.
