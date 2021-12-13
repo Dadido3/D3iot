@@ -15,8 +15,29 @@ import (
 //
 // Most devices contain just one module with some number of channels (E.g. RGBW light bulbs).
 // But there can be multiple modules per device, e.g. multi headed lamps, addressable LED strips.
-// TODO: Consider refactoring this into an interface. The implementation should be inside of each device driver. This could be a general implementation that devices could use
-type ModuleDescriptor struct {
+type ModuleDescriptor interface {
+	// DCSChannels returns the dimensionality of the device color space.
+	DCSChannels() int
+
+	// XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
+	//
+	// Short: XYZ --> device color space.
+	XYZToDCS(color CIE1931XYZColor) (DCSColor, error)
+
+	// DCSToXYZ takes a vector from the device color space and returns the color it represents.
+	//
+	// Short: Device color space --> XYZ.
+	DCSToXYZ(v DCSColor) (CIE1931XYZColor, error)
+}
+
+// ModuleDescriptorGeneral is a general implementation of a ModuleDescriptor.
+// It supports:
+//
+//	- Up to 3 primary colored emitters.
+//	- Up to 3 white colored emitters, so a total of 6 colored emitters.
+//	- Custom transfer functions.
+//	- Limit of the sum of DCS values.
+type ModuleDescriptorGeneral struct {
 	// The XYZ values of the primary channels that span the gamut for this module.
 	// All colors that increase the gamut have to go into here.
 	// This usually describes the 3 primary colors.
@@ -33,24 +54,29 @@ type ModuleDescriptor struct {
 	// For other devices this may need some generalization, maybe a custom function/interface that can enforce this limit.
 	LinearDCSSumLimit float64
 
-	// TODO: Add transfer function. It's not needed right now, but may be needed for future devices
+	// Transfer function to convert from a linear device color space into a non linear device color space, and vice versa.
+	// Set to nil if your DCS is linear.
+	TransferFunction TransferFunction
 }
 
+// Check if it implements ModuleDescriptor.
+var _ ModuleDescriptor = &ModuleDescriptorGeneral{}
+
 // Channels returns the dimensionality of the device color space.
-func (e *ModuleDescriptor) Channels() int {
+func (e *ModuleDescriptorGeneral) DCSChannels() int {
 	return len(e.PrimaryColors) + len(e.WhiteColors)
 }
 
 // AllChannels returns a transformation that contains all channels (A list of all colors).
-func (e *ModuleDescriptor) AllChannels() TransformationLinDCSToXYZ {
-	result := make(TransformationLinDCSToXYZ, 0, e.Channels())
+func (e *ModuleDescriptorGeneral) AllChannels() TransformationLinDCSToXYZ {
+	result := make(TransformationLinDCSToXYZ, 0, e.DCSChannels())
 	return append(append(result, e.PrimaryColors...), e.WhiteColors...)
 }
 
 // XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 //
 // Short: XYZ --> device color space.
-func (e *ModuleDescriptor) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
+func (e *ModuleDescriptorGeneral) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
 	// TODO: Precalculate inverse transformations
 	primaryTransMatrix, err := e.PrimaryColors.Inverted()
 	if err != nil {
@@ -92,8 +118,8 @@ func (e *ModuleDescriptor) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
 
 	// Clamp values, apply transfer function.
 	resultV := make(DCSColor, 0, primaryV.Channels()+whiteV.Channels())
-	resultV = append(resultV, primaryV.DeLinearized(nil)...)
-	resultV = append(resultV, whiteV.DeLinearized(nil)...) // TODO: Add transfer function here later
+	resultV = append(resultV, primaryV.DeLinearized(e.TransferFunction)...)
+	resultV = append(resultV, whiteV.DeLinearized(e.TransferFunction)...)
 
 	return resultV, nil
 }
@@ -101,12 +127,12 @@ func (e *ModuleDescriptor) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.
 //
 // Short: Device color space --> XYZ.
-func (e *ModuleDescriptor) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
-	if v.Channels() != e.Channels() {
-		return CIE1931XYZColor{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
+func (e *ModuleDescriptorGeneral) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
+	if v.Channels() != e.DCSChannels() {
+		return CIE1931XYZColor{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.DCSChannels())
 	}
 
-	linV := v.Linearized(nil) // TODO: Put transfer function here later
+	linV := v.Linearized(e.TransferFunction)
 	linSum := linV.ComponentSum()
 
 	// Scale it so that the sum of all values doesn't exceed the limit.

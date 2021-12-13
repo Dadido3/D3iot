@@ -17,19 +17,19 @@ var (
 )
 
 // Module descriptor with sRGB primaries, but linear transfer function.
-var moduleDescriptorLinearStandardRGB = ModuleDescriptor{
+var moduleDescriptorLinearStandardRGB = &ModuleDescriptorGeneral{
 	PrimaryColors:     TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
 	LinearDCSSumLimit: 3,
 }
 
 // Module descriptor with only two primaries, and linear transfer function.
-var moduleDescriptorLinearRG = ModuleDescriptor{
+var moduleDescriptorLinearRG = &ModuleDescriptorGeneral{
 	PrimaryColors:     TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen},
 	LinearDCSSumLimit: 2,
 }
 
 // Module descriptor with only one primary, and linear transfer function.
-var moduleDescriptorLinearR = ModuleDescriptor{
+var moduleDescriptorLinearR = &ModuleDescriptorGeneral{
 	PrimaryColors:     TransformationLinDCSToXYZ{standardRGBRed},
 	LinearDCSSumLimit: 1,
 }
