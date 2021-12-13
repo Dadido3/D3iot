@@ -9,11 +9,11 @@ import (
 	"fmt"
 )
 
-// ModuleDescriptorCIE1931XYZ describes a module that is already in CIE 1931 XYZ color space.
+// ModuleProfileCIE1931XYZ describes a module that is already in CIE 1931 XYZ color space.
 // This only converts the color space into one with a relative luminance.
 //
 // This assumes that the device does the correct color transformation.
-type ModuleDescriptorCIE1931XYZ struct {
+type ModuleProfileCIE1931XYZ struct {
 	WhitePointColor CIE1931XYZColor // The white point of the module.
 
 	// Transfer function to convert from a linear device color space into a non linear device color space, and vice versa.
@@ -21,17 +21,17 @@ type ModuleDescriptorCIE1931XYZ struct {
 	TransferFunction TransferFunction
 }
 
-// Check if it implements ModuleDescriptor.
-var _ ModuleDescriptor = &ModuleDescriptorCIE1931XYZ{}
+// Check if it implements ModuleProfile.
+var _ ModuleProfile = &ModuleProfileCIE1931XYZ{}
 
 // Channels returns the dimensionality of the device color space.
-func (e *ModuleDescriptorCIE1931XYZ) Channels() int {
+func (e *ModuleProfileCIE1931XYZ) Channels() int {
 	return 3
 }
 
 // WhitePoint returns the white point as a CIE 1931 XYZ color.
 // This is also the brightest color a module can output.
-func (e *ModuleDescriptorCIE1931XYZ) WhitePoint() CIE1931XYZColor {
+func (e *ModuleProfileCIE1931XYZ) WhitePoint() CIE1931XYZColor {
 	return e.WhitePointColor
 }
 
@@ -42,14 +42,14 @@ func (e *ModuleDescriptorCIE1931XYZ) WhitePoint() CIE1931XYZColor {
 //	- RGB emitters.
 //	- RGB + white emitters.
 //	- RGB + cold white + warm white emitters.
-func (e *ModuleDescriptorCIE1931XYZ) ChannelPoints() []CIE1931XYZColor {
+func (e *ModuleProfileCIE1931XYZ) ChannelPoints() []CIE1931XYZColor {
 	return []CIE1931XYZColor{{1, 0, 0}, {0, 1, 0}, {0, 0, 1}}
 }
 
 // XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 //
 // Short: XYZ --> device color space.
-func (e *ModuleDescriptorCIE1931XYZ) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
+func (e *ModuleProfileCIE1931XYZ) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
 	v := LinDCSColor{color.X, color.Y, color.Z}
 
 	// Scale so that the white point would result in Y = 1.0
@@ -61,7 +61,7 @@ func (e *ModuleDescriptorCIE1931XYZ) XYZToDCS(color CIE1931XYZColor) (DCSColor, 
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.
 //
 // Short: Device color space --> XYZ.
-func (e *ModuleDescriptorCIE1931XYZ) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
+func (e *ModuleProfileCIE1931XYZ) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
 	if v.Channels() != e.Channels() {
 		return CIE1931XYZColor{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
 	}

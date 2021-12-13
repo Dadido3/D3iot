@@ -18,12 +18,12 @@ var (
 )
 
 func TestDCSToXYZ1(t *testing.T) {
-	// Module descriptor with sRGB primaries, but linear transfer function.
-	moduleDescriptor := &ModuleDescriptorGeneral{
+	// Module profile with sRGB primaries, but linear transfer function.
+	moduleProfile := &ModuleProfileGeneral{
 		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
 	}
 
-	color, err := moduleDescriptor.DCSToXYZ([]float64{1, 0, 0})
+	color, err := moduleProfile.DCSToXYZ([]float64{1, 0, 0})
 	if err != nil {
 		t.Fatalf("DCSToXYZ() failed: %v", err)
 	}
@@ -34,12 +34,12 @@ func TestDCSToXYZ1(t *testing.T) {
 }
 
 func TestXYZToDCS1(t *testing.T) {
-	// Module descriptor with only one primary, and linear transfer function.
-	moduleDescriptor := &ModuleDescriptorGeneral{
+	// Module profile with only one primary, and linear transfer function.
+	moduleProfile := &ModuleProfileGeneral{
 		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed},
 	}
 
-	dcsValue, err := moduleDescriptor.XYZToDCS(standardRGBRed.Scaled(0.4))
+	dcsValue, err := moduleProfile.XYZToDCS(standardRGBRed.Scaled(0.4))
 	if err != nil {
 		t.Fatalf("XYZToDCS() failed: %v", err)
 	}
@@ -51,12 +51,12 @@ func TestXYZToDCS1(t *testing.T) {
 }
 
 func TestXYZToDCS2(t *testing.T) {
-	// Module descriptor with only two primaries, and linear transfer function.
-	moduleDescriptor := &ModuleDescriptorGeneral{
+	// Module profile with only two primaries, and linear transfer function.
+	moduleProfile := &ModuleProfileGeneral{
 		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen},
 	}
 
-	dcsValue, err := moduleDescriptor.XYZToDCS(standardRGBGreen.Sum(standardRGBRed.Scaled(0.5)))
+	dcsValue, err := moduleProfile.XYZToDCS(standardRGBGreen.Sum(standardRGBRed.Scaled(0.5)))
 	if err != nil {
 		t.Fatalf("XYZToDCS() failed: %v", err)
 	}
@@ -68,15 +68,15 @@ func TestXYZToDCS2(t *testing.T) {
 }
 
 func TestXYZToDCS3(t *testing.T) {
-	// Module descriptor with sRGB primaries.
-	moduleDescriptor := &ModuleDescriptorGeneral{
+	// Module profile with sRGB primaries.
+	moduleProfile := &ModuleProfileGeneral{
 		WhitePointColor: standardRGBRed.Sum(standardRGBGreen, standardRGBBlue),
 		PrimaryColors:   TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
 		//OutputLimiter:    &OutputLimiterSum{2},
 		TransferFunction: TransferFunctionStandardRGB,
 	}
 
-	dcsValue, err := moduleDescriptor.XYZToDCS(CIE1931XYZColor{0.5, 0.4, 0.3})
+	dcsValue, err := moduleProfile.XYZToDCS(CIE1931XYZColor{0.5, 0.4, 0.3})
 	if err != nil {
 		t.Fatalf("XYZToDCS() failed: %v", err)
 	}

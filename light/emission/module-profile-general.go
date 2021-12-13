@@ -9,14 +9,14 @@ import (
 	"fmt"
 )
 
-// ModuleDescriptorGeneral is a general implementation of a ModuleDescriptor.
+// ModuleProfileGeneral is a general implementation of a ModuleProfile.
 // It supports:
 //
 //	- Up to 3 primary colored emitters.
 //	- Up to 3 white emitters, so a total of 6 emitters.
 //	- Custom transfer functions.
 //	- Limit of the sum of DCS values.
-type ModuleDescriptorGeneral struct {
+type ModuleProfileGeneral struct {
 	// WhitePointColor is the brightest color that the module can output.
 	// Usually it's the combination of all white emitters.
 	// Or of all primary emitters, if there are no white ones, or if the whites are are less bright.
@@ -42,17 +42,17 @@ type ModuleDescriptorGeneral struct {
 	TransferFunction TransferFunction
 }
 
-// Check if it implements ModuleDescriptor.
-var _ ModuleDescriptor = &ModuleDescriptorGeneral{}
+// Check if it implements ModuleProfile.
+var _ ModuleProfile = &ModuleProfileGeneral{}
 
 // Channels returns the dimensionality of the device color space.
-func (e *ModuleDescriptorGeneral) Channels() int {
+func (e *ModuleProfileGeneral) Channels() int {
 	return len(e.PrimaryColors) + len(e.WhiteColors)
 }
 
 // WhitePoint returns the white point as a CIE 1931 XYZ color.
 // This is also the brightest color a module can output.
-func (e *ModuleDescriptorGeneral) WhitePoint() CIE1931XYZColor {
+func (e *ModuleProfileGeneral) WhitePoint() CIE1931XYZColor {
 	return e.WhitePointColor
 }
 
@@ -63,12 +63,12 @@ func (e *ModuleDescriptorGeneral) WhitePoint() CIE1931XYZColor {
 //	- RGB emitters.
 //	- RGB + white emitters.
 //	- RGB + cold white + warm white emitters.
-func (e *ModuleDescriptorGeneral) ChannelPoints() []CIE1931XYZColor {
+func (e *ModuleProfileGeneral) ChannelPoints() []CIE1931XYZColor {
 	return e.FullTransformation()
 }
 
 // FullTransformation returns a transformation (matrix) that contains all channels (A list of all colors).
-func (e *ModuleDescriptorGeneral) FullTransformation() TransformationLinDCSToXYZ {
+func (e *ModuleProfileGeneral) FullTransformation() TransformationLinDCSToXYZ {
 	result := make(TransformationLinDCSToXYZ, 0, e.Channels())
 	return append(append(result, e.PrimaryColors...), e.WhiteColors...)
 }
@@ -76,7 +76,7 @@ func (e *ModuleDescriptorGeneral) FullTransformation() TransformationLinDCSToXYZ
 // XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 //
 // Short: XYZ --> device color space.
-func (e *ModuleDescriptorGeneral) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
+func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
 	// TODO: Precalculate inverse transformations
 	primaryTransMatrix, err := e.PrimaryColors.Inverted()
 	if err != nil {
@@ -134,7 +134,7 @@ func (e *ModuleDescriptorGeneral) XYZToDCS(color CIE1931XYZColor) (DCSColor, err
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.
 //
 // Short: Device color space --> XYZ.
-func (e *ModuleDescriptorGeneral) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
+func (e *ModuleProfileGeneral) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
 	if v.Channels() != e.Channels() {
 		return CIE1931XYZColor{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
 	}

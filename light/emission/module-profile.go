@@ -5,15 +5,13 @@
 
 package emission
 
-// TODO: Consider renaming ModuleDescriptor into ModuleProfile as that represents more what it is
-
-// ModuleDescriptor describes a set of light emitting things that together generate a single color impression.
+// ModuleProfile describes a set of light emitting things that together generate a single color impression.
 //
 // This contains everything that is necessary to convert from the CIE 1931 XYZ color space into the device color space, and vice versa.
 //
 // Most devices contain just one module with some number of channels (E.g. RGBW light bulbs).
 // But there can be multiple modules per device, e.g. multi headed lamps, addressable LED strips.
-type ModuleDescriptor interface {
+type ModuleProfile interface {
 	// Channels returns the dimensionality of the device color space.
 	Channels() int
 
