@@ -55,7 +55,7 @@ func (e *ModuleDescriptorCIE1931XYZ) XYZToDCS(color CIE1931XYZColor) (DCSColor, 
 	// Scale so that the white point would result in Y = 1.0
 	v = v.Scaled(1 / e.WhitePointColor.Y)
 
-	return v.DeLinearized(e.TransferFunction), nil
+	return v.ClampedAndDeLinearized(e.TransferFunction), nil
 }
 
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.
@@ -66,7 +66,7 @@ func (e *ModuleDescriptorCIE1931XYZ) DCSToXYZ(v DCSColor) (CIE1931XYZColor, erro
 		return CIE1931XYZColor{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
 	}
 
-	linV := v.Linearized(e.TransferFunction)
+	linV := v.ClampedAndLinearized(e.TransferFunction)
 
 	// Scale it up.
 	linV = linV.Scaled(e.WhitePointColor.Y)

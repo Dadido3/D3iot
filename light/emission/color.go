@@ -67,15 +67,43 @@ func (c DCSColor) ClampedIndividually() DCSColor {
 	return result
 }
 
-// Linearized returns c transformed into linear device color space by the given transfer function tf.
+// ClampedAndLinearized returns c transformed into linear device color space by the given transfer function tf.
 // This clamps the values before transforming them.
-func (c DCSColor) Linearized(tf TransferFunction) LinDCSColor {
+func (c DCSColor) ClampedAndLinearized(tf TransferFunction) LinDCSColor {
 	if tf != nil {
 		return tf.Linearize(c.ClampedIndividually())
 	}
 
 	// Transfer function is linear.
 	return LinDCSColor(c.ClampedIndividually())
+}
+
+// Difference returns the difference c - c2.
+//
+// This may or may not make sense to use, as this is not a linear space.
+func (c DCSColor) Difference(c2 DCSColor) (DCSColor, error) {
+	if c.Channels() != c2.Channels() {
+		return nil, fmt.Errorf("mismatching amount of channels %d and %d", c.Channels(), c2.Channels())
+	}
+
+	result := make(DCSColor, 0, c.Channels())
+	for i, channel := range c {
+		result = append(result, channel-c2[i])
+	}
+
+	return result, nil
+}
+
+// ComponentSum returns the sum of all components.
+// No clamp is applied.
+//
+// This may or may not make sense to use, as this is not a linear space.
+func (c DCSColor) ComponentSum() float64 {
+	var result float64
+	for _, channel := range c {
+		result += channel
+	}
+	return result
 }
 
 // LinDCSColor represents a color in a linear device color space.
@@ -117,9 +145,9 @@ func (c LinDCSColor) ClampedToPositive() LinDCSColor {
 	return result
 }
 
-// DeLinearized returns c transformed into device color space by the given transfer function tf.
+// ClampedAndDeLinearized returns c transformed into device color space by the given transfer function tf.
 // This clamps the values before transforming them.
-func (c LinDCSColor) DeLinearized(tf TransferFunction) DCSColor {
+func (c LinDCSColor) ClampedAndDeLinearized(tf TransferFunction) DCSColor {
 	if tf != nil {
 		return tf.DeLinearize(c.ClampedIndividually())
 	}
@@ -150,6 +178,22 @@ func (c LinDCSColor) Sum(colors ...LinDCSColor) (LinDCSColor, error) {
 		for i, channel := range color {
 			result[i] += channel
 		}
+	}
+
+	return result, nil
+}
+
+// Difference returns the difference c - c2.
+//
+// This may or may not make sense to use, as this is not a linear space.
+func (c LinDCSColor) Difference(c2 LinDCSColor) (LinDCSColor, error) {
+	if c.Channels() != c2.Channels() {
+		return nil, fmt.Errorf("mismatching amount of channels %d and %d", c.Channels(), c2.Channels())
+	}
+
+	result := make(LinDCSColor, 0, c.Channels())
+	for i, channel := range c {
+		result = append(result, channel-c2[i])
 	}
 
 	return result, nil

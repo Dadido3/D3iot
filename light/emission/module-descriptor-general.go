@@ -34,9 +34,8 @@ type ModuleDescriptorGeneral struct {
 	// Normally these are the white LEDs which span a color gamut that lies inside that of the PrimaryColors.
 	WhiteColors TransformationLinDCSToXYZ
 
-	// The limit of the sum of all values in the linearized device color space.
-	// For other devices this may need some generalization, maybe a custom function/interface that can enforce this limit.
-	LinearDCSSumLimit float64 // TODO: Generalize LinearDCSSumLimit
+	// Limit the output in some form.
+	OutputLimiter OutputLimiter
 
 	// Transfer function to convert from a linear device color space into a non linear device color space, and vice versa.
 	// Set to nil if your DCS is linear.
@@ -117,12 +116,19 @@ func (e *ModuleDescriptorGeneral) XYZToDCS(color CIE1931XYZColor) (DCSColor, err
 	}
 	whiteV = whiteV.Scaled(whiteScaling)
 
-	// Clamp values, apply transfer function.
-	resultV := make(DCSColor, 0, primaryV.Channels()+whiteV.Channels())
-	resultV = append(resultV, primaryV.DeLinearized(e.TransferFunction)...)
-	resultV = append(resultV, whiteV.DeLinearized(e.TransferFunction)...)
+	// Put all values into one slice.
+	linV := make(LinDCSColor, 0, primaryV.Channels()+whiteV.Channels())
+	linV = append(append(linV, primaryV...), whiteV...)
 
-	return resultV, nil
+	// Limit output.
+	if e.OutputLimiter != nil {
+		linV = e.OutputLimiter.LimitDCS(linV)
+	}
+
+	// Clamp values, apply transfer function.
+	nonLinV := linV.ClampedAndDeLinearized(e.TransferFunction)
+
+	return nonLinV, nil
 }
 
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.
@@ -133,12 +139,10 @@ func (e *ModuleDescriptorGeneral) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) 
 		return CIE1931XYZColor{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
 	}
 
-	linV := v.Linearized(e.TransferFunction)
-	linSum := linV.ComponentSum()
+	linV := v.ClampedAndLinearized(e.TransferFunction)
 
-	// Scale it so that the sum of all values doesn't exceed the limit.
-	if linSum > e.LinearDCSSumLimit {
-		linV = linV.Scaled(float64(e.LinearDCSSumLimit) / float64(linSum))
+	if e.OutputLimiter != nil {
+		linV = e.OutputLimiter.LimitDCS(linV)
 	}
 
 	// Calculate resulting color.

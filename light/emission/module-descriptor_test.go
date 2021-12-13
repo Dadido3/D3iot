@@ -6,6 +6,7 @@
 package emission
 
 import (
+	"math"
 	"testing"
 )
 
@@ -16,26 +17,13 @@ var (
 	standardRGBBlue  = CIE1931XYZColor{0.1804375, 0.0721750, 0.9503041}
 )
 
-// Module descriptor with sRGB primaries, but linear transfer function.
-var moduleDescriptorLinearStandardRGB = &ModuleDescriptorGeneral{
-	PrimaryColors:     TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
-	LinearDCSSumLimit: 3,
-}
+func TestDCSToXYZ1(t *testing.T) {
+	// Module descriptor with sRGB primaries, but linear transfer function.
+	moduleDescriptor := &ModuleDescriptorGeneral{
+		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
+	}
 
-// Module descriptor with only two primaries, and linear transfer function.
-var moduleDescriptorLinearRG = &ModuleDescriptorGeneral{
-	PrimaryColors:     TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen},
-	LinearDCSSumLimit: 2,
-}
-
-// Module descriptor with only one primary, and linear transfer function.
-var moduleDescriptorLinearR = &ModuleDescriptorGeneral{
-	PrimaryColors:     TransformationLinDCSToXYZ{standardRGBRed},
-	LinearDCSSumLimit: 1,
-}
-
-func TestDCSToXYZ(t *testing.T) {
-	color, err := moduleDescriptorLinearStandardRGB.DCSToXYZ([]float64{1, 0, 0})
+	color, err := moduleDescriptor.DCSToXYZ([]float64{1, 0, 0})
 	if err != nil {
 		t.Fatalf("DCSToXYZ() failed: %v", err)
 	}
@@ -46,23 +34,55 @@ func TestDCSToXYZ(t *testing.T) {
 }
 
 func TestXYZToDCS1(t *testing.T) {
-	dcsValue, err := moduleDescriptorLinearR.XYZToDCS(standardRGBRed.Scaled(0.4))
+	// Module descriptor with only one primary, and linear transfer function.
+	moduleDescriptor := &ModuleDescriptorGeneral{
+		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed},
+	}
+
+	dcsValue, err := moduleDescriptor.XYZToDCS(standardRGBRed.Scaled(0.4))
 	if err != nil {
 		t.Fatalf("XYZToDCS() failed: %v", err)
 	}
 
-	if dcsValue.Channels() != 1 || compareFloat64(dcsValue[0], 0.4) {
-		t.Errorf("XYZToDCS() returned wrong device color space vector. Got %v, want %v", dcsValue, []float64{0.4})
+	want := DCSColor{0.4}
+	if diff, err := want.Difference(dcsValue); err != nil || math.Abs(diff.ComponentSum()) > 0.000001 {
+		t.Errorf("XYZToDCS() returned wrong device color space vector. Got %v, want %v", dcsValue, want)
 	}
 }
 
 func TestXYZToDCS2(t *testing.T) {
-	dcsValue, err := moduleDescriptorLinearRG.XYZToDCS(standardRGBGreen.Sum(standardRGBRed.Scaled(0.5)))
+	// Module descriptor with only two primaries, and linear transfer function.
+	moduleDescriptor := &ModuleDescriptorGeneral{
+		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen},
+	}
+
+	dcsValue, err := moduleDescriptor.XYZToDCS(standardRGBGreen.Sum(standardRGBRed.Scaled(0.5)))
 	if err != nil {
 		t.Fatalf("XYZToDCS() failed: %v", err)
 	}
 
-	if dcsValue.Channels() != 2 || compareFloat64(dcsValue[0], 0.5) || compareFloat64(dcsValue[1], 1) {
-		t.Errorf("XYZToDCS() returned wrong device color space vector. Got %v, want %v", dcsValue, []float64{0.5, 1})
+	want := DCSColor{0.5, 1}
+	if diff, err := want.Difference(dcsValue); err != nil || math.Abs(diff.ComponentSum()) > 0.000001 {
+		t.Errorf("XYZToDCS() returned wrong device color space vector. Got %v, want %v", dcsValue, want)
+	}
+}
+
+func TestXYZToDCS3(t *testing.T) {
+	// Module descriptor with sRGB primaries.
+	moduleDescriptor := &ModuleDescriptorGeneral{
+		WhitePointColor: standardRGBRed.Sum(standardRGBGreen, standardRGBBlue),
+		PrimaryColors:   TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
+		//OutputLimiter:    &OutputLimiterSum{2},
+		TransferFunction: TransferFunctionStandardRGB,
+	}
+
+	dcsValue, err := moduleDescriptor.XYZToDCS(CIE1931XYZColor{0.5, 0.4, 0.3})
+	if err != nil {
+		t.Fatalf("XYZToDCS() failed: %v", err)
+	}
+
+	want := DCSColor{0.933728, 0.564098, 0.550101}
+	if diff, err := want.Difference(dcsValue); err != nil || math.Abs(diff.ComponentSum()) > 0.000001 {
+		t.Errorf("XYZToDCS() returned wrong device color space vector. Got %v, want %v", dcsValue, want)
 	}
 }

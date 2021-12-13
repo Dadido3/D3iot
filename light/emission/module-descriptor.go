@@ -5,7 +5,9 @@
 
 package emission
 
-// ModuleDescriptor describes a group of LEDs that together generate a single color impression.
+// TODO: Consider renaming ModuleDescriptor into ModuleProfile as that represents more what it is
+
+// ModuleDescriptor describes a set of light emitting things that together generate a single color impression.
 //
 // This contains everything that is necessary to convert from the CIE 1931 XYZ color space into the device color space, and vice versa.
 //
