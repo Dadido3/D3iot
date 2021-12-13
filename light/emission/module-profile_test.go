@@ -70,7 +70,7 @@ func TestXYZToDCS2(t *testing.T) {
 func TestXYZToDCS3(t *testing.T) {
 	// Module profile with sRGB primaries.
 	moduleProfile := &ModuleProfileGeneral{
-		WhitePointColor: standardRGBRed.Sum(standardRGBGreen, standardRGBBlue),
+		WhitePointColor: CIE1931XYZColor{}.Sum(standardRGBRed, standardRGBGreen, standardRGBBlue),
 		PrimaryColors:   TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
 		//OutputLimiter:    &OutputLimiterSum{2},
 		TransferFunction: TransferFunctionStandardRGB,
