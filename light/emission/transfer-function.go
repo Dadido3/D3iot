@@ -50,3 +50,24 @@ func (tf *transferFunctionStandardRGB) DeLinearize(values LinDCSColor) DCSColor 
 	}
 	return result
 }
+
+// TransferFunctionGamma implements the a gamma transfer function.
+type TransferFunctionGamma struct {
+	Gamma float64
+}
+
+func (tf *TransferFunctionGamma) Linearize(values DCSColor) LinDCSColor {
+	result := make(LinDCSColor, 0, values.Channels())
+	for _, value := range values {
+		result = append(result, math.Pow(value, tf.Gamma))
+	}
+	return result
+}
+
+func (tf *TransferFunctionGamma) DeLinearize(values LinDCSColor) DCSColor {
+	result := make(DCSColor, 0, values.Channels())
+	for _, value := range values {
+		result = append(result, math.Pow(value, 1/tf.Gamma))
+	}
+	return result
+}
