@@ -46,23 +46,23 @@ func TestDCSToXYZ(t *testing.T) {
 }
 
 func TestXYZToDCS1(t *testing.T) {
-	dcsValue, err := moduleDescriptorLinearR.XYZToDCS(standardRGBRed.Scale(0.4))
+	dcsValue, err := moduleDescriptorLinearR.XYZToDCS(standardRGBRed.Scaled(0.4))
 	if err != nil {
 		t.Fatalf("XYZToDCS() failed: %v", err)
 	}
 
-	if len(dcsValue) != 1 || compareFloat64(dcsValue[0], 0.4) {
+	if dcsValue.Channels() != 1 || compareFloat64(dcsValue[0], 0.4) {
 		t.Errorf("XYZToDCS() returned wrong device color space vector. Got %v, want %v", dcsValue, []float64{0.4})
 	}
 }
 
 func TestXYZToDCS2(t *testing.T) {
-	dcsValue, err := moduleDescriptorLinearRG.XYZToDCS(standardRGBGreen.Add(standardRGBRed.Scale(0.5)))
+	dcsValue, err := moduleDescriptorLinearRG.XYZToDCS(standardRGBGreen.Sum(standardRGBRed.Scaled(0.5)))
 	if err != nil {
 		t.Fatalf("XYZToDCS() failed: %v", err)
 	}
 
-	if len(dcsValue) != 2 || compareFloat64(dcsValue[0], 0.5) || compareFloat64(dcsValue[1], 1) {
+	if dcsValue.Channels() != 2 || compareFloat64(dcsValue[0], 0.5) || compareFloat64(dcsValue[1], 1) {
 		t.Errorf("XYZToDCS() returned wrong device color space vector. Got %v, want %v", dcsValue, []float64{0.5, 1})
 	}
 }
