@@ -46,6 +46,28 @@ func (c CIE1931XYZColor) CrossProd(c2 CIE1931XYZColor) CIE1931XYZColor {
 	return CIE1931XYZColor{c.Y*c2.Z - c.Z*c2.Y, c.Z*c2.X - c.X*c2.Z, c.X*c2.Y - c.Y*c2.X}
 }
 
+// CIE1931xyYColor represents a color in the CIE 1931 xyY color space.
+//
+// LuminanceY is not relative, but absolute.
+// And contrary to the normal definition, it uses lumen as its unit.
+type CIE1931xyYColor struct {
+	X, Y       float64 // x, y in the range of [0, 1]
+	LuminanceY float64 // Luminance Y in lumen.
+}
+
+func (c CIE1931xyYColor) CIE1931XYZColor() CIE1931XYZColor {
+	return CIE1931XYZColor{
+		(c.X * c.LuminanceY) / c.Y,
+		c.LuminanceY,
+		(1 - c.X - c.Y) * c.LuminanceY / c.Y,
+	}
+}
+
+// DCSColor implements the Value interface.
+func (c CIE1931xyYColor) DCSColor(mp ModuleProfile) DCSColor {
+	return mp.XYZToDCS(c.CIE1931XYZColor())
+}
+
 // DCSColor represents a color in a device color space.
 // This is more or less what is sent to the light device.
 //
