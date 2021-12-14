@@ -167,16 +167,22 @@ func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
 	case deviceClassDW:
 		if pilot.State && pilot.Dimming != nil {
 			dcsColor = emission.DCSColor{float64(*pilot.Dimming) / 100}
+		} else {
+			dcsColor = emission.DCSColor{0}
 		}
 
 	case deviceClassTW:
 		if pilot.State && pilot.CW != nil && pilot.WW != nil {
 			dcsColor = emission.DCSColor{float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
+		} else {
+			dcsColor = emission.DCSColor{0, 0}
 		}
 
 	case deviceClassRGBTW:
 		if pilot.State && pilot.R != nil && pilot.G != nil && pilot.B != nil && pilot.CW != nil && pilot.WW != nil {
 			dcsColor = emission.DCSColor{float64(*pilot.R) / 255, float64(*pilot.G) / 255, float64(*pilot.B) / 255, float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
+		} else {
+			dcsColor = emission.DCSColor{0, 0, 0, 0, 0}
 		}
 
 	default:
