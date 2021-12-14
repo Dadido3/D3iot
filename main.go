@@ -90,13 +90,16 @@ func main() {
 
 	//moduleProfile := light.ModuleProfiles()[0]
 
-	//if err := light.SetColors(emission.CIE1931XYZColor{X: 0.95047, Y: 1, Z: 1.08883}.Scaled(1521 * 0.1)); err != nil {
-	//if err := light.SetColors(moduleProfile.WhitePoint().Scaled(0.1)); err != nil {
-	if err := light.SetColors(emission.StandardIlluminantA.Scaled(200)); err != nil {
+	//emissionValue := emission.CIE1931XYZColor{X: 0.95047, Y: 1, Z: 1.08883}.Scaled(1521 * 0.1)
+	//emissionValue := moduleProfile.WhitePoint().Scaled(0.1)
+	//emissionValue := emission.StandardIlluminantA.Scaled(300)
+	emissionValue := emission.BlackBodyFixed{Temperature: 2200, Luminance: 200}
+
+	if err := light.SetColors(emissionValue); err != nil {
 		log.Printf("light.SetColors() failed: %v", err)
 	}
 
-	var res emission.CIE1931xyYColor
+	var res emission.CIE1931XYZColor
 	if err := light.GetColors(&res); err != nil {
 		log.Printf("light.GetColors() failed: %v", err)
 	} else {

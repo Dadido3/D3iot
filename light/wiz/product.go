@@ -102,7 +102,7 @@ type deviceClass string
 
 const (
 	deviceClassDW    deviceClass = "DW"    // Dimmable white.
-	deviceClassTW    deviceClass = "TW"    // Tweakable white.
+	deviceClassTW    deviceClass = "TW"    // Tweakable/Tunable white.
 	deviceClassRGBTW deviceClass = "RGBTW" // RGB + cold white + warm white. DeviceClassRGBTW is called "RGB" in the moduleName.
 )
 

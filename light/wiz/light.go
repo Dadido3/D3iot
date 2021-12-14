@@ -112,14 +112,14 @@ func (l *Light) SetColors(emissionValues ...emission.ValueIntoDCS) error {
 		switch dc := l.product.deviceClass; dc {
 		case deviceClassDW:
 			if dcsColor.Channels() == 1 {
-				return l.SetPilot(NewPilot(true).WithDimming(uint(dcsColor[0] * 100)))
+				return l.SetPilot(NewPilot(true).WithScene(SceneCoolWhite, 100).WithDimming(uint(dcsColor[0] * 100)))
 			} else {
 				return fmt.Errorf("unexpected number of channels. Got %d, want %d", dcsColor.Channels(), 1)
 			}
 
 		case deviceClassTW:
 			if dcsColor.Channels() == 2 {
-				return l.SetPilot(NewPilotWithRGBW(100, 0, 0, 0, uint8(dcsColor[0]*255), uint8(dcsColor[1]*255)))
+				return l.SetPilot(NewPilotWithWhite(100, uint8(dcsColor[0]*255), uint8(dcsColor[1]*255)))
 			} else {
 				return fmt.Errorf("unexpected number of channels. Got %d, want %d", dcsColor.Channels(), 2)
 			}
@@ -161,25 +161,29 @@ func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
 		return fmt.Errorf("couldn't read pilot: %w", err)
 	}
 
+	if pilot.Scene != nil {
+		return fmt.Errorf("current state can't be represented by a color")
+	}
+
 	// Generate DCS color/vector.
 	var dcsColor emission.DCSColor
 	switch dc := l.product.deviceClass; dc {
 	case deviceClassDW:
-		if pilot.State && pilot.Dimming != nil {
+		if pilot.State && pilot.HasDimming() {
 			dcsColor = emission.DCSColor{float64(*pilot.Dimming) / 100}
 		} else {
 			dcsColor = emission.DCSColor{0}
 		}
 
 	case deviceClassTW:
-		if pilot.State && pilot.CW != nil && pilot.WW != nil {
+		if pilot.State && pilot.HasWhite() {
 			dcsColor = emission.DCSColor{float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
 		} else {
 			dcsColor = emission.DCSColor{0, 0}
 		}
 
 	case deviceClassRGBTW:
-		if pilot.State && pilot.R != nil && pilot.G != nil && pilot.B != nil && pilot.CW != nil && pilot.WW != nil {
+		if pilot.State && pilot.HasRGBW() {
 			dcsColor = emission.DCSColor{float64(*pilot.R) / 255, float64(*pilot.G) / 255, float64(*pilot.B) / 255, float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
 		} else {
 			dcsColor = emission.DCSColor{0, 0, 0, 0, 0}

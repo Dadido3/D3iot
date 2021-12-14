@@ -98,7 +98,7 @@ The following is a list of known devices by their `ModuleName`.
 The list is not complete and may contain mistakes.
 
 | ModuleName | Device class | Model ID | Example products |
-| --- | --- | --- | --- |
+| ---------- | ------------ | -------- | ---------------- |
 | `ESP01_SHDW_01`      | `DW`    |          | `WiZ A60 B22 WiZ60 DW` |
 | `ESP01_SHDW1_31`     | `DW`    |          | |
 | `ESP01_SHRGB_03`     | `RGBTW` |          | |
@@ -113,7 +113,7 @@ The list is not complete and may contain mistakes.
 | `ESP06_SHDW1_01`     | `DW`    |          | |
 | `ESP06_SHDW9_01`     | `DW`    |          | `Filament amber A19 E26` |
 | `ESP14_SHRGB1C_01`   | `RGBTW` |          | |
-| `ESP15_SHTW1_01I`    | `TW`    |          | |
+| `ESP15_SHTW1_01I`    | `TW`    |          | `WiZ A60 E27 WiZ60 TW F` |
 | `ESP17_SHTW9_01`     | `TW`    |          | `WiZ Filament Bulb EAN 8718699786793` |
 | `ESP56_SHTW3_01`     | `TW`    |          | `WiZ G25 Filament bulb`, `WiZ G95 E27 720lm Filament Bulb` |
 
