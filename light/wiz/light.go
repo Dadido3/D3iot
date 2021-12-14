@@ -18,12 +18,15 @@ import (
 type Light struct {
 	address string
 
-	product *Product // The cached product of the lamp. This will be queried from the device as soon as it is needed.
+	// The product describing the device.
+	// Either an exact match or a general product that may fit good enough.
+	// This must not be nil.
+	product *Product
 
-	deadline   time.Duration // Default deadline for a whole communcation action (sending and receiving).
-	retries    uint          // Number of retries when the deadline got exceeded.
-	connMutex  sync.Mutex    // Mutex preventing simultaneous connections to this device.
-	paramMutex sync.Mutex    // Mutex protecting parameters of this object.
+	deadline  time.Duration // Default deadline for a whole communcation action (sending and receiving).
+	retries   uint          // Number of retries when the deadline got exceeded.
+	connMutex sync.Mutex    // Mutex preventing simultaneous connections to this device.
+	//paramMutex sync.Mutex    // Mutex protecting parameters of this object.
 
 	DebugWriter io.Writer // Writer that can be used to debug network communication.
 }
@@ -33,26 +36,46 @@ var _ light.Light = &Light{}
 
 // NewLight returns an object that represents a single WiZ light accessible by the given address.
 //
-//	light := NewLight("192.168.1.123:38899")
-func NewLight(address string) *Light {
-	return &Light{
+// This will query the product type, so it needs to be able to connect via the given address.
+//
+//	light, err := NewLight("192.168.1.123:38899")
+func NewLight(address string) (*Light, error) {
+	light := &Light{
 		address:  address,
 		deadline: 100 * time.Millisecond,
 		retries:  10,
 	}
-}
 
-// Product returns an exact or general product descriptor of the device's abilities and limits.
-func (l *Light) Product() (*Product, error) {
-	l.paramMutex.Lock()
-	defer l.paramMutex.Unlock()
-
-	// Use cached product if possible.
-	if l.product != nil {
-		return l.product, nil
+	var err error
+	if light.product, err = light.determineProduct(); err != nil {
+		return nil, fmt.Errorf("couldn't determine WiZ product: %w", err)
 	}
 
-	// Query product from lamp.
+	return light, nil
+}
+
+// NewLight returns an object that represents a single WiZ light accessible by the given address.
+//
+// This will not query the device to determine the WiZ product, but use the one defined in the parameter.
+// Therefore it will not make an attempt to communicate with the light.
+func NewLightWithProduct(address string, product *Product) (*Light, error) { // TODO: Find a way to make a more generalized version of this. There need to be some way to create a light object without having to connect to determine the product
+	if product == nil {
+		return nil, fmt.Errorf("no product defined")
+	}
+
+	light := &Light{
+		address:  address,
+		deadline: 100 * time.Millisecond,
+		retries:  10,
+		product:  product,
+	}
+
+	return light, nil
+}
+
+// determineProduct queries and determines the product of the device.
+func (l *Light) determineProduct() (*Product, error) {
+	// Query device info from lamp.
 	devInfo, err := l.GetDeviceInfo()
 	if err != nil {
 		return nil, err
@@ -63,23 +86,17 @@ func (l *Light) Product() (*Product, error) {
 		return nil, err
 	}
 
-	l.product = product
 	return product, nil
 }
 
-// SetProduct allows to overwrite the product of the device.
-// This is useful if users of this lib are caching the products of known devices on their own.
-//
-// If you want to cause a re-evaluation, set the product to nil.
-func (l *Light) SetProduct(product *Product) {
-	l.paramMutex.Lock()
-	defer l.paramMutex.Unlock()
-
-	l.product = product
+// Product returns an exact or general product descriptor of the device's abilities and limits.
+func (l *Light) Product() *Product {
+	return l.product
 }
 
 // SetColors sets the colors of all the modules in the light device.
-// Colors which are not set will be turned off.
+// Colors which are not set are assumed to be turned off.
+// This will return an error if you try to set more colors than there are modules in a light device.
 func (l *Light) SetColors(colors ...emission.Value) error {
 	switch len(colors) {
 	case 0:
@@ -87,90 +104,89 @@ func (l *Light) SetColors(colors ...emission.Value) error {
 		return l.SetPilot(pilot)
 
 	case 1:
-		product, err := l.Product()
-		if err != nil {
-			return fmt.Errorf("failed to determine WiZ product: %w", err)
-		}
-		if product.moduleProfile == nil {
-			return fmt.Errorf("WiZ product doesn't contain module profile")
-		}
-		color := colors[0].DCSColor(product.moduleProfile)
+		moduleProfile := l.ModuleProfiles()[0]
 
-		switch color.Channels() {
-		case 1:
-			return l.SetPilot(NewPilot(true).WithDimming(uint(color[0] * 100)))
-		case 2:
-			return l.SetPilot(NewPilotWithRGBW(100, 0, 0, 0, uint8(color[0]*255), uint8(color[1]*255)))
-		case 3:
-			return l.SetPilot(NewPilotWithRGBW(100, uint8(color[0]*255), uint8(color[1]*255), uint8(color[2]*255), 0, 0))
-		case 4:
-			return l.SetPilot(NewPilotWithRGBW(100, uint8(color[0]*255), uint8(color[1]*255), uint8(color[2]*255), 0, uint8(color[3]*255)))
-		case 5:
-			return l.SetPilot(NewPilotWithRGBW(100, uint8(color[0]*255), uint8(color[1]*255), uint8(color[2]*255), uint8(color[3]*255), uint8(color[4]*255)))
+		// Transform dcsColor into DCS.
+		dcsColor := colors[0].DCSColor(moduleProfile)
+
+		switch dc := l.product.deviceClass; dc {
+		case deviceClassDW:
+			if dcsColor.Channels() == 1 {
+				return l.SetPilot(NewPilot(true).WithDimming(uint(dcsColor[0] * 100)))
+			} else {
+				return fmt.Errorf("unexpected number of channels. Got %d, want %d", dcsColor.Channels(), 1)
+			}
+
+		case deviceClassTW:
+			if dcsColor.Channels() == 2 {
+				return l.SetPilot(NewPilotWithRGBW(100, 0, 0, 0, uint8(dcsColor[0]*255), uint8(dcsColor[1]*255)))
+			} else {
+				return fmt.Errorf("unexpected number of channels. Got %d, want %d", dcsColor.Channels(), 2)
+			}
+
+		case deviceClassRGBTW:
+			if dcsColor.Channels() == 5 {
+				return l.SetPilot(NewPilotWithRGBW(100, uint8(dcsColor[0]*255), uint8(dcsColor[1]*255), uint8(dcsColor[2]*255), uint8(dcsColor[3]*255), uint8(dcsColor[4]*255)))
+			} else {
+				return fmt.Errorf("unexpected number of channels. Got %d, want %d", dcsColor.Channels(), 5)
+			}
+
+		default:
+			return fmt.Errorf("unsupported device class %q", dc)
+
 		}
-		return fmt.Errorf("unsupported channel amount of %d", color.Channels())
 
 	default:
-		return fmt.Errorf("supplied %d colors, this device has only 1", len(colors))
+		return fmt.Errorf("supplied %d colors, this device has only 1 module", len(colors))
 	}
-
 }
 
-// Colors returns the current colors of all the modules in the light device.
-func (l *Light) Colors() ([]emission.CIE1931XYZColor, error) {
+// GetColors queries the light device for all colors of its modules and returns them.
+// This must always returns as much elements as the device has modules, even in case of an error.
+func (l *Light) GetColors() ([]emission.CIE1931XYZColor, error) {
 	pilot, err := l.GetPilot()
 	if err != nil {
-		return nil, fmt.Errorf("couldn't read pilot: %w", err)
+		return []emission.CIE1931XYZColor{{}}, fmt.Errorf("couldn't read pilot: %w", err)
 	}
 
-	product, err := l.Product()
-	if err != nil {
-		return nil, fmt.Errorf("failed to determine WiZ product: %w", err)
-	}
-	if product.moduleProfile == nil {
-		return nil, fmt.Errorf("WiZ product doesn't contain module profile")
-	}
+	moduleProfile := l.ModuleProfiles()[0]
 
-	// TODO: Fix this crap
-	dcsColor := make(emission.DCSColor, product.moduleProfile.Channels())
-	for i := range dcsColor {
-		switch i {
-		case 0:
-			if pilot.R != nil {
-				dcsColor[i] = float64(*pilot.R) / 255
-			}
-		case 1:
-			if pilot.G != nil {
-				dcsColor[i] = float64(*pilot.G) / 255
-			}
-		case 2:
-			if pilot.B != nil {
-				dcsColor[i] = float64(*pilot.B) / 255
-			}
-		case 3:
-			if pilot.CW != nil {
-				dcsColor[i] = float64(*pilot.CW) / 255
-			}
-		case 4:
-			if pilot.WW != nil {
-				dcsColor[i] = float64(*pilot.WW) / 255
-			}
+	// Generate DCS color/vector.
+	var dcsColor emission.DCSColor
+	switch dc := l.product.deviceClass; dc {
+	case deviceClassDW:
+		if pilot.State && pilot.Dimming != nil {
+			dcsColor = emission.DCSColor{float64(*pilot.Dimming) / 100}
 		}
+
+	case deviceClassTW:
+		if pilot.State && pilot.CW != nil && pilot.WW != nil {
+			dcsColor = emission.DCSColor{float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
+		}
+
+	case deviceClassRGBTW:
+		if pilot.State && pilot.R != nil && pilot.G != nil && pilot.B != nil && pilot.CW != nil && pilot.WW != nil {
+			dcsColor = emission.DCSColor{float64(*pilot.R) / 255, float64(*pilot.G) / 255, float64(*pilot.B) / 255, float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
+		}
+
+	default:
+		return []emission.CIE1931XYZColor{{}}, fmt.Errorf("unsupported device class %q", dc)
+
 	}
 
-	xyzColor, err := product.moduleProfile.DCSToXYZ(dcsColor)
+	xyzColor, err := moduleProfile.DCSToXYZ(dcsColor)
 	return []emission.CIE1931XYZColor{xyzColor}, err
 }
 
-// ModuleProfiles returns the profiles that describe each module.
-func (l *Light) ModuleProfiles() ([]emission.ModuleProfile, error) {
-	product, err := l.Product()
-	if err != nil {
-		return nil, fmt.Errorf("failed to determine WiZ product: %w", err)
-	}
-	if product.moduleProfile == nil {
-		return nil, fmt.Errorf("WiZ product doesn't contain module profile")
-	}
+// Modules returns the amount of modules.
+// All devices must at least have one module.
+func (l *Light) Modules() int {
+	return 1 // Most (or all?) WiZ lights have one module.
+}
 
-	return []emission.ModuleProfile{product.moduleProfile}, nil
+// ModuleProfiles returns the profiles that describe the modules of a device.
+// The length of the resulting list is equal to the number of modules for this device.
+// This must always returns as much elements as the device has modules.
+func (l *Light) ModuleProfiles() []emission.ModuleProfile {
+	return []emission.ModuleProfile{l.Product().moduleProfile}
 }

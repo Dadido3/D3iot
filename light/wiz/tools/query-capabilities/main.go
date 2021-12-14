@@ -35,7 +35,7 @@ type Result struct {
 	DebugEntries []string // Debug output of the library, split by newline characters.
 }
 
-var flagDeviceAddress = flag.String("address", "", "The address of the device to be queried. Example: \"--address wiz-123abc:38899\" or \"--address 192.168.1.123:38899\"")
+var flagDeviceAddress = flag.String("address", "wiz-d47cf3:38899", "The address of the device to be queried. Example: \"--address wiz-123abc:38899\" or \"--address 192.168.1.123:38899\"")
 
 func main() {
 	flag.Parse()
@@ -48,7 +48,10 @@ func main() {
 
 	var res Result
 
-	light := wiz.NewLight(*flagDeviceAddress)
+	light, err := wiz.NewLight(*flagDeviceAddress)
+	if err != nil {
+		log.Panicf("wiz.NewLight() failed: %v", err)
+	}
 
 	// Write debug output into buffer.
 	debugBuffer := new(bytes.Buffer)
@@ -83,11 +86,7 @@ func main() {
 	}
 
 	// Get matched product and its capabilities.
-	if prod, err := light.Product(); err != nil {
-		log.Panicf("light.Product() failed: %v", err)
-	} else {
-		res.MatchedProduct = prod
-	}
+	res.MatchedProduct = light.Product()
 
 	// Get current pilot.
 	if pilot, err := light.GetPilot(); err != nil {

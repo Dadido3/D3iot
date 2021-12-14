@@ -9,11 +9,15 @@ import (
 	"log"
 	"time"
 
+	"github.com/Dadido3/D3iot/light/emission"
 	"github.com/Dadido3/D3iot/light/wiz"
 )
 
 func main() {
-	light := wiz.NewLight("192.168.1.174:38899")
+	light, err := wiz.NewLight("wiz-d47cf3:38899")
+	if err != nil {
+		log.Printf("wiz.NewLight() failed: %v", err)
+	}
 
 	/*if err := light.Pulse(50, 100*time.Millisecond); err != nil {
 		log.Printf("light.Pulse() failed: %v", err)
@@ -43,6 +47,12 @@ func main() {
 		log.Printf("Favs: %v", favs)
 	}*/
 
+	/*if product, err := light.Product(); err != nil {
+		log.Printf("light.Product() failed: %v", err)
+	} else {
+		log.Printf("Product: %v", product)
+	}*/
+
 	/*//scene := wiz.SceneBedtime
 	//temp := uint(4200)
 	r := uint8(255)
@@ -53,9 +63,10 @@ func main() {
 		R:       &r,
 		//Scene:   &scene,
 	}*/
-	//pilot := wiz.NewPilotWithRGBW(100, 255, 0, 0, 0, 0)
-	/*pilot := wiz.NewPilotWithScene(wiz.SceneCozy, 20, 0)
-	if err := light.SetPilot(pilot); err != nil {
+	//pilot := wiz.NewPilotWithRGBW(100, 0, 0, 0, 50, 0)
+	//pilot := wiz.NewPilot(false)
+	//pilot := wiz.NewPilotWithScene(wiz.SceneCozy, 20, 0)
+	/*if err := light.SetPilot(pilot); err != nil {
 		log.Printf("light.SetPilot() failed: %v", err)
 	}
 	log.Printf("Set pilot to %v", pilot)*/
@@ -69,7 +80,7 @@ func main() {
 		time.Sleep(1 * time.Second)
 	}*/
 
-	/*if err := light.SetPilot(wiz.Pilot{}.WithRGBW(50, 0, 0, 0, 00, 100)); err != nil {
+	/*if err := light.SetPilot(wiz.Pilot{}.WithRGBW(0, 0, 0, 50, 0)); err != nil {
 		log.Printf("light.SetPilot() failed: %v", err)
 	}*/
 
@@ -77,15 +88,35 @@ func main() {
 		log.Printf("light.SetPilot() failed: %v", err)
 	}*/
 
-	/*if true {
+	moduleProfile := light.ModuleProfiles()[0]
+	_ = moduleProfile
+
+	if err := light.SetColors(emission.CIE1931XYZColor{X: 0.95047, Y: 1, Z: 1.08883}.Scaled(1521 * 0.1)); err != nil {
+		//if err := light.SetColors(moduleProfile.WhitePoint().Scaled(0.1)); err != nil {
+		log.Printf("light.SetColors() failed: %v", err)
+	}
+
+	if colors, err := light.GetColors(); err != nil {
+		log.Printf("light.GetColors() failed: %v", err)
+	} else {
+		log.Printf("Returned colors: %v", colors)
+	}
+
+	if pilot, err := light.GetPilot(); err != nil {
+		log.Printf("light.GetPilot() failed: %v", err)
+	} else {
+		log.Printf("Returned pilot: %v", pilot)
+	}
+
+	if true {
 		return
-	}*/
+	}
 
 	// Interpolate between these pilots.
 	pilots := []wiz.Pilot{
 		//wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 0, 0, 45),    // Warm white with a good CRI.
-		//wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 0, 45, 0),    // Cold white with a good CRI.
-		//wiz.NewPilot(true).WithDimming(100).WithRGBW(80, 100, 40, 0, 0), // Same cold white simlated with RGB colors. Bad CRI.
+		wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 0, 0, 170), // Cold white with a good CRI.
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(90, 120, 50, 0, 0), // Same cold white simlated with RGB colors. Bad CRI.
 
 		// "Fire" sequence.
 		//wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 0, 0, 40),
@@ -93,15 +124,15 @@ func main() {
 		//wiz.NewPilot(true).WithDimming(100).WithRGBW(30, 0, 0, 10, 30),
 		//wiz.NewPilot(true).WithDimming(100).WithRGBW(10, 0, 0, 0, 50),
 
-		wiz.NewPilot(true).WithDimming(100).WithRGBW(255, 0, 0, 0, 0),
-		wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 255, 0, 0, 0),
-		wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 255, 0, 0),
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(255, 0, 0, 0, 0),
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 255, 0, 0, 0),
+		//wiz.NewPilot(true).WithDimming(100).WithRGBW(0, 0, 255, 0, 0),
 	}
 
 	// Init first pilot for blending/mixing.
 	p1 := pilots[0]
 
-	steps := 100
+	steps := 1
 
 	for {
 		for _, p2 := range pilots {
@@ -123,7 +154,7 @@ func main() {
 						log.Printf("light.SetPilot() failed: %v", err)
 					}
 				}
-				time.Sleep(10 * time.Millisecond)
+				time.Sleep(1000 * time.Millisecond)
 			}
 			p1 = p2
 		}

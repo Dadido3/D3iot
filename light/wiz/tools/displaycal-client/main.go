@@ -30,7 +30,10 @@ func main() {
 		return
 	}
 
-	light := wiz.NewLight(*flagDeviceAddress)
+	light, err := wiz.NewLight(*flagDeviceAddress)
+	if err != nil {
+		log.Panicf("wiz.NewLight() failed: %v", err)
+	}
 
 	// Setup HTTP request.
 	req, err := http.NewRequest("GET", *flagDisplayCALAddress, nil)
