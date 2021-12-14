@@ -69,8 +69,8 @@ func TestXYZToDCS3(t *testing.T) {
 	moduleProfile := &ModuleProfileGeneral{
 		WhitePointColor: CIE1931XYZColor{}.Sum(standardRGBRed, standardRGBGreen, standardRGBBlue),
 		PrimaryColors:   TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
-		//OutputLimiter:    &OutputLimiterSum{2},
-		TransferFunction: TransferFunctionStandardRGB,
+		OutputLimiter:   OutputLimiterSum{3},
+		TransferFunc:    TransferFunctionStandardRGB,
 	}
 	moduleProfile.MustInit()
 

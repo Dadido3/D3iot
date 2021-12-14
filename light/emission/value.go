@@ -9,5 +9,5 @@ package emission
 //
 // Every type that implements this value can be used to control the output of light devices.
 type Value interface {
-	DCSColor(ModuleProfile) []float64 // DCSColor returns the value transformed into the device color space.
+	DCSColor(ModuleProfile) DCSColor // DCSColor returns the value transformed into the device color space.
 }

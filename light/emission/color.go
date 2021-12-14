@@ -20,6 +20,11 @@ type CIE1931XYZColor struct {
 	X, Y, Z float64
 }
 
+// DCSColor implements the Value interface.
+func (c CIE1931XYZColor) DCSColor(mp ModuleProfile) DCSColor {
+	return mp.XYZToDCS(c)
+}
+
 // Sum returns the sum of c and all colors.
 func (c CIE1931XYZColor) Sum(colors ...CIE1931XYZColor) CIE1931XYZColor {
 	result := c
@@ -49,6 +54,11 @@ func (c CIE1931XYZColor) CrossProd(c2 CIE1931XYZColor) CIE1931XYZColor {
 //
 // Example: 5 channels could represent RGB + cold white + warm white.
 type DCSColor []float64
+
+// DCSColor implements the Value interface.
+func (c DCSColor) DCSColor(mp ModuleProfile) DCSColor {
+	return c
+}
 
 // Channels returns the amount of channels.
 // This is the dimensionality of the DCS.
@@ -112,6 +122,11 @@ func (c DCSColor) ComponentSum() float64 {
 // If clamped, the values are in the range [0, 1].
 // They can be unclamped, that depends on the context where they are used.
 type LinDCSColor []float64
+
+// DCSColor implements the Value interface.
+func (c LinDCSColor) DCSColor(mp ModuleProfile) DCSColor {
+	return c.ClampedAndDeLinearized(mp.TransferFunction())
+}
 
 // Channels returns the amount of channels.
 // This is the dimensionality of the DCS.

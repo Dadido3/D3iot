@@ -17,9 +17,9 @@ type TransferFunction interface {
 type transferFunctionStandardRGB struct{}
 
 // TransferFunctionStandardRGB implements the sRGB transfer function.
-var TransferFunctionStandardRGB = &transferFunctionStandardRGB{}
+var TransferFunctionStandardRGB = transferFunctionStandardRGB{}
 
-func (tf *transferFunctionStandardRGB) Linearize(values DCSColor) LinDCSColor {
+func (tf transferFunctionStandardRGB) Linearize(values DCSColor) LinDCSColor {
 	result := make(LinDCSColor, 0, values.Channels())
 	for _, value := range values {
 		var trans float64
@@ -35,7 +35,7 @@ func (tf *transferFunctionStandardRGB) Linearize(values DCSColor) LinDCSColor {
 	return result
 }
 
-func (tf *transferFunctionStandardRGB) DeLinearize(values LinDCSColor) DCSColor {
+func (tf transferFunctionStandardRGB) DeLinearize(values LinDCSColor) DCSColor {
 	result := make(DCSColor, 0, values.Channels())
 	for _, value := range values {
 		var trans float64
@@ -56,7 +56,7 @@ type TransferFunctionGamma struct {
 	Gamma float64
 }
 
-func (tf *TransferFunctionGamma) Linearize(values DCSColor) LinDCSColor {
+func (tf TransferFunctionGamma) Linearize(values DCSColor) LinDCSColor {
 	result := make(LinDCSColor, 0, values.Channels())
 	for _, value := range values {
 		result = append(result, math.Pow(value, tf.Gamma))
@@ -64,7 +64,7 @@ func (tf *TransferFunctionGamma) Linearize(values DCSColor) LinDCSColor {
 	return result
 }
 
-func (tf *TransferFunctionGamma) DeLinearize(values LinDCSColor) DCSColor {
+func (tf TransferFunctionGamma) DeLinearize(values LinDCSColor) DCSColor {
 	result := make(DCSColor, 0, values.Channels())
 	for _, value := range values {
 		result = append(result, math.Pow(value, 1/tf.Gamma))

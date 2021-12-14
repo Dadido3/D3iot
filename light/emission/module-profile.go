@@ -37,4 +37,6 @@ type ModuleProfile interface {
 	//
 	// Short: Device color space --> XYZ.
 	DCSToXYZ(v DCSColor) (CIE1931XYZColor, error)
+
+	TransferFunction() TransferFunction
 }

@@ -15,7 +15,7 @@ import (
 //	- Up to 3 primary colored emitters.
 //	- Up to 3 white emitters, so a total of 6 emitters.
 //	- Custom transfer functions.
-//	- Limit of the sum of DCS values.
+//	- Custom output limiter functions.
 //
 // You need to call the MustInit() method before this profile can be used.
 type ModuleProfileGeneral struct {
@@ -43,7 +43,7 @@ type ModuleProfileGeneral struct {
 
 	// Transfer function to convert from a linear device color space into a non linear device color space, and vice versa.
 	// Set to nil if your DCS is linear.
-	TransferFunction TransferFunction
+	TransferFunc TransferFunction
 }
 
 // Check if it implements ModuleProfile.
@@ -65,10 +65,13 @@ func (e *ModuleProfileGeneral) Init() error {
 }
 
 // MustInit is the same as Init(), but panics on any error.
-func (e *ModuleProfileGeneral) MustInit() {
+// As a small help, this returns the module itself.
+func (e *ModuleProfileGeneral) MustInit() *ModuleProfileGeneral {
 	if err := e.Init(); err != nil {
 		panic(fmt.Sprintf("Failed to init module profile %v: %v", e, err))
 	}
+
+	return e
 }
 
 // Channels returns the dimensionality of the device color space.
@@ -107,7 +110,7 @@ func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) DCSColor {
 	primaryV := e.invPrimaryColors.Multiplied(color)
 
 	// Determine the closest possible DCS values of the white colors.
-	whiteV := e.invWhiteColors.Multiplied(color).ClampedIndividually()
+	whiteV := e.invWhiteColors.Multiplied(color).ClampedToPositive()
 	// Get the color of whiteValues
 	whiteColor, err := e.WhiteColors.Multiplied(whiteV)
 	if err != nil {
@@ -142,7 +145,7 @@ func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) DCSColor {
 	}
 
 	// Clamp values, apply transfer function.
-	nonLinV := linV.ClampedAndDeLinearized(e.TransferFunction)
+	nonLinV := linV.ClampedAndDeLinearized(e.TransferFunc)
 
 	return nonLinV
 }
@@ -155,7 +158,7 @@ func (e *ModuleProfileGeneral) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
 		return CIE1931XYZColor{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
 	}
 
-	linV := v.ClampedAndLinearized(e.TransferFunction)
+	linV := v.ClampedAndLinearized(e.TransferFunc)
 
 	if e.OutputLimiter != nil {
 		linV = e.OutputLimiter.LimitDCS(linV)
@@ -173,4 +176,8 @@ func (e *ModuleProfileGeneral) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
 	}
 
 	return result, nil
+}
+
+func (e *ModuleProfileGeneral) TransferFunction() TransferFunction {
+	return e.TransferFunc
 }

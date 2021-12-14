@@ -20,6 +20,16 @@ func (t TransformationLinDCSToXYZ) DCSChannels() int {
 	return len(t)
 }
 
+// Scaled returns t scaled by the scalar s.
+func (t TransformationLinDCSToXYZ) Scaled(s float64) TransformationLinDCSToXYZ {
+	result := make(TransformationLinDCSToXYZ, 0, t.DCSChannels())
+	for _, color := range t {
+		result = append(result, color.Scaled(s))
+	}
+
+	return result
+}
+
 // Multiplied returns the multiplication of t with an in the linear device color space.
 // The result is a CIE 1931 XYZ color.
 func (t TransformationLinDCSToXYZ) Multiplied(v LinDCSColor) (CIE1931XYZColor, error) {

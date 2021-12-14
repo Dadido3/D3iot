@@ -17,7 +17,7 @@ type OutputLimiterSum struct {
 	Limit float64
 }
 
-func (ol *OutputLimiterSum) LimitDCS(v LinDCSColor) LinDCSColor {
+func (ol OutputLimiterSum) LimitDCS(v LinDCSColor) LinDCSColor {
 	sum := v.ComponentSum()
 
 	// Scale it so that the sum of all values doesn't exceed the limit.

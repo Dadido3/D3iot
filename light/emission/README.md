@@ -43,7 +43,7 @@ moduleProfile := &ModuleProfileGeneral{
     WhitePointColor:  CIE1931XYZColor{}.Sum(standardRGBRed, standardRGBGreen, standardRGBBlue),
     PrimaryColors:    TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
     WhiteColors:      TransformationLinDCSToXYZ{CIE1931XYZColor{30, 30, 30}},
-    OutputLimiter:    &OutputLimiterSum{2},
+    OutputLimiter:    OutputLimiterSum{3},
     TransferFunction: TransferFunctionStandardRGB,
 }
 moduleProfile.MustInit() // Precalculate some internal values.
