@@ -88,18 +88,19 @@ func main() {
 		log.Printf("light.SetPilot() failed: %v", err)
 	}*/
 
-	moduleProfile := light.ModuleProfiles()[0]
-	_ = moduleProfile
+	//moduleProfile := light.ModuleProfiles()[0]
 
-	if err := light.SetColors(emission.CIE1931XYZColor{X: 0.95047, Y: 1, Z: 1.08883}.Scaled(1521 * 0.1)); err != nil {
-		//if err := light.SetColors(moduleProfile.WhitePoint().Scaled(0.1)); err != nil {
+	//if err := light.SetColors(emission.CIE1931XYZColor{X: 0.95047, Y: 1, Z: 1.08883}.Scaled(1521 * 0.1)); err != nil {
+	//if err := light.SetColors(moduleProfile.WhitePoint().Scaled(0.1)); err != nil {
+	if err := light.SetColors(emission.StandardIlluminantA.Scaled(200)); err != nil {
 		log.Printf("light.SetColors() failed: %v", err)
 	}
 
-	if colors, err := light.GetColors(); err != nil {
+	var res emission.CIE1931xyYColor
+	if err := light.GetColors(&res); err != nil {
 		log.Printf("light.GetColors() failed: %v", err)
 	} else {
-		log.Printf("Returned colors: %v", colors)
+		log.Printf("Returned colors: %v", res)
 	}
 
 	if pilot, err := light.GetPilot(); err != nil {
