@@ -31,7 +31,7 @@ type ModuleProfile interface {
 	// XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 	//
 	// Short: XYZ --> device color space.
-	XYZToDCS(color CIE1931XYZColor) (DCSColor, error)
+	XYZToDCS(color CIE1931XYZColor) DCSColor
 
 	// DCSToXYZ takes a vector from the device color space and returns the color it represents.
 	//

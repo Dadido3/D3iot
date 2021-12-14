@@ -16,6 +16,8 @@ import (
 //	- Up to 3 white emitters, so a total of 6 emitters.
 //	- Custom transfer functions.
 //	- Limit of the sum of DCS values.
+//
+// You need to call the MustInit() method before this profile can be used.
 type ModuleProfileGeneral struct {
 	// WhitePointColor is the brightest color that the module can output.
 	// Usually it's the combination of all white emitters.
@@ -26,13 +28,15 @@ type ModuleProfileGeneral struct {
 	// All colors that increase the gamut have to go into here.
 	// This usually describes the 3 primary colors.
 	PrimaryColors TransformationLinDCSToXYZ
-
-	// TODO: Precalculate inverse transformations
+	// Precalculated inverse of the above.
+	invPrimaryColors TransformationXYZToLinDCS
 
 	// The XYZ values of channels used to increase the CRI and light output of a lamp.
 	// This is achieved by maximizing these channels in a way that doesn't change the color or luminance of the resulting color.
 	// Normally these are the white LEDs which span a color gamut that lies inside that of the PrimaryColors.
 	WhiteColors TransformationLinDCSToXYZ
+	// Precalculated inverse of the above.
+	invWhiteColors TransformationXYZToLinDCS
 
 	// Limit the output in some form.
 	OutputLimiter OutputLimiter
@@ -44,6 +48,28 @@ type ModuleProfileGeneral struct {
 
 // Check if it implements ModuleProfile.
 var _ ModuleProfile = &ModuleProfileGeneral{}
+
+// Init precalculates some values.
+func (e *ModuleProfileGeneral) Init() error {
+	var err error
+
+	if e.invPrimaryColors, err = e.PrimaryColors.Inverted(); err != nil {
+		return fmt.Errorf("failed to invert primary color matrix: %w", err)
+	}
+
+	if e.invWhiteColors, err = e.WhiteColors.Inverted(); err != nil {
+		return fmt.Errorf("failed to invert white color matrix: %w", err)
+	}
+
+	return nil
+}
+
+// MustInit is the same as Init(), but panics on any error.
+func (e *ModuleProfileGeneral) MustInit() {
+	if err := e.Init(); err != nil {
+		panic(fmt.Sprintf("Failed to init module profile %v: %v", e, err))
+	}
+}
 
 // Channels returns the dimensionality of the device color space.
 func (e *ModuleProfileGeneral) Channels() int {
@@ -76,30 +102,20 @@ func (e *ModuleProfileGeneral) FullTransformation() TransformationLinDCSToXYZ {
 // XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 //
 // Short: XYZ --> device color space.
-func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
-	// TODO: Precalculate inverse transformations
-	primaryTransMatrix, err := e.PrimaryColors.Inverted()
-	if err != nil {
-		return nil, fmt.Errorf("failed to invert primary color matrix: %w", err)
-	}
-	whiteTransMatrix, err := e.WhiteColors.Inverted()
-	if err != nil {
-		return nil, fmt.Errorf("failed to invert white color matrix: %w", err)
-	}
-
+func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) DCSColor {
 	// Determine the DCS values of the primary colors.
-	primaryV := primaryTransMatrix.Multiplied(color)
+	primaryV := e.invPrimaryColors.Multiplied(color)
 
 	// Determine the closest possible DCS values of the white colors.
-	whiteV := whiteTransMatrix.Multiplied(color).ClampedIndividually()
+	whiteV := e.invWhiteColors.Multiplied(color).ClampedIndividually()
 	// Get the color of whiteValues
 	whiteColor, err := e.WhiteColors.Multiplied(whiteV)
 	if err != nil {
-		return nil, err // Shouldn't happen.
+		panic(err) // Shouldn't happen.
 	}
 	// Get the proportions of the primary colors that represent whiteColor.
 	// Can contain negative values if the white is outside the gamut of the primaries.
-	whiteVInPrimary := primaryTransMatrix.Multiplied(whiteColor)
+	whiteVInPrimary := e.invPrimaryColors.Multiplied(whiteColor)
 
 	// The following is just a question of how to weight the different values.
 	// We want to increase the CRI and light output.
@@ -107,12 +123,12 @@ func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) (DCSColor, error)
 
 	whiteScaling, err := primaryV.ScaledToPositiveDifference(whiteVInPrimary)
 	if err != nil {
-		return nil, fmt.Errorf("failed to find white color scaling factor: %w", err)
+		panic(err) // Shouldn't happen.
 	}
 
 	primaryV, err = primaryV.Sum(whiteVInPrimary.Scaled(-whiteScaling))
 	if err != nil {
-		return nil, err // Shouldn't happen.
+		panic(err) // Shouldn't happen.
 	}
 	whiteV = whiteV.Scaled(whiteScaling)
 
@@ -128,7 +144,7 @@ func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) (DCSColor, error)
 	// Clamp values, apply transfer function.
 	nonLinV := linV.ClampedAndDeLinearized(e.TransferFunction)
 
-	return nonLinV, nil
+	return nonLinV
 }
 
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.

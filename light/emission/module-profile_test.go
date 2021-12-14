@@ -22,6 +22,7 @@ func TestDCSToXYZ1(t *testing.T) {
 	moduleProfile := &ModuleProfileGeneral{
 		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
 	}
+	moduleProfile.MustInit()
 
 	color, err := moduleProfile.DCSToXYZ([]float64{1, 0, 0})
 	if err != nil {
@@ -38,11 +39,9 @@ func TestXYZToDCS1(t *testing.T) {
 	moduleProfile := &ModuleProfileGeneral{
 		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed},
 	}
+	moduleProfile.MustInit()
 
-	dcsValue, err := moduleProfile.XYZToDCS(standardRGBRed.Scaled(0.4))
-	if err != nil {
-		t.Fatalf("XYZToDCS() failed: %v", err)
-	}
+	dcsValue := moduleProfile.XYZToDCS(standardRGBRed.Scaled(0.4))
 
 	want := DCSColor{0.4}
 	if diff, err := want.Difference(dcsValue); err != nil || math.Abs(diff.ComponentSum()) > 0.000001 {
@@ -55,11 +54,9 @@ func TestXYZToDCS2(t *testing.T) {
 	moduleProfile := &ModuleProfileGeneral{
 		PrimaryColors: TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen},
 	}
+	moduleProfile.MustInit()
 
-	dcsValue, err := moduleProfile.XYZToDCS(standardRGBGreen.Sum(standardRGBRed.Scaled(0.5)))
-	if err != nil {
-		t.Fatalf("XYZToDCS() failed: %v", err)
-	}
+	dcsValue := moduleProfile.XYZToDCS(standardRGBGreen.Sum(standardRGBRed.Scaled(0.5)))
 
 	want := DCSColor{0.5, 1}
 	if diff, err := want.Difference(dcsValue); err != nil || math.Abs(diff.ComponentSum()) > 0.000001 {
@@ -75,11 +72,9 @@ func TestXYZToDCS3(t *testing.T) {
 		//OutputLimiter:    &OutputLimiterSum{2},
 		TransferFunction: TransferFunctionStandardRGB,
 	}
+	moduleProfile.MustInit()
 
-	dcsValue, err := moduleProfile.XYZToDCS(CIE1931XYZColor{0.5, 0.4, 0.3})
-	if err != nil {
-		t.Fatalf("XYZToDCS() failed: %v", err)
-	}
+	dcsValue := moduleProfile.XYZToDCS(CIE1931XYZColor{0.5, 0.4, 0.3})
 
 	want := DCSColor{0.933728, 0.564098, 0.550101}
 	if diff, err := want.Difference(dcsValue); err != nil || math.Abs(diff.ComponentSum()) > 0.000001 {

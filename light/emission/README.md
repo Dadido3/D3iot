@@ -46,6 +46,7 @@ moduleProfile := &ModuleProfileGeneral{
     OutputLimiter:    &OutputLimiterSum{2},
     TransferFunction: TransferFunctionStandardRGB,
 }
+moduleProfile.MustInit() // Precalculate some internal values.
 ```
 
 - `WhitePointColor` is the brightest color that module can output. It's just a CIE 1931 XYZ color.
@@ -56,9 +57,9 @@ moduleProfile := &ModuleProfileGeneral{
 
 ### Transforming colors
 
-`moduleProfile` can then be used to transform between color space.
+`moduleProfile` can then be used to transform between color spaces.
 
 ``` go
 xyzColor, err := moduleProfile.DCSToXYZ(dcsColor)
-dcsColor, err := moduleProfile.XYZToDCS(xyzColor)
+dcsColor := moduleProfile.XYZToDCS(xyzColor)
 ```

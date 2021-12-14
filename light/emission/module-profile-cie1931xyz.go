@@ -49,13 +49,13 @@ func (e *ModuleProfileCIE1931XYZ) ChannelPoints() []CIE1931XYZColor {
 // XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 //
 // Short: XYZ --> device color space.
-func (e *ModuleProfileCIE1931XYZ) XYZToDCS(color CIE1931XYZColor) (DCSColor, error) {
+func (e *ModuleProfileCIE1931XYZ) XYZToDCS(color CIE1931XYZColor) DCSColor {
 	v := LinDCSColor{color.X, color.Y, color.Z}
 
 	// Scale so that the white point would result in Y = 1.0
 	v = v.Scaled(1 / e.WhitePointColor.Y)
 
-	return v.ClampedAndDeLinearized(e.TransferFunction), nil
+	return v.ClampedAndDeLinearized(e.TransferFunction)
 }
 
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.
