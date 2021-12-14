@@ -63,3 +63,7 @@ moduleProfile.MustInit() // Precalculate some internal values.
 xyzColor, err := moduleProfile.DCSToXYZ(dcsColor)
 dcsColor := moduleProfile.XYZToDCS(xyzColor)
 ```
+
+### Value interface
+
+Most objects in this library that represent some sort of emission implement the `emission.Value` interface.

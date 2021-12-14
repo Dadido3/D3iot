@@ -7,7 +7,18 @@ package emission
 
 // Value describes a light emission by its color and luminance.
 //
-// Every type that implements this value can be used to control the output of light devices.
+// Every type that represents some sort of light emission should implement this interface.
 type Value interface {
-	DCSColor(ModuleProfile) DCSColor // DCSColor returns the value transformed into the device color space.
+	IntoDCS(ModuleProfile) DCSColor        // IntoDCS returns the value transformed into the device color space.
+	FromDCS(ModuleProfile, DCSColor) error // FromDCS transforms the device color space vector into the color space of Value.
+}
+
+// ValueIntoDCS is the Value into DCS transformation part of the Value interface.
+type ValueIntoDCS interface {
+	IntoDCS(ModuleProfile) DCSColor // IntoDCS returns the value transformed into the device color space.
+}
+
+// ValueIntoDCS is the DCS into Value transformation part of the Value interface.
+type ValueFromDCS interface {
+	FromDCS(ModuleProfile, DCSColor) error // FromDCS transforms the device color space vector into the color space of Value.
 }

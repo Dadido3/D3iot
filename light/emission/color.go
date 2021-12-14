@@ -20,9 +20,20 @@ type CIE1931XYZColor struct {
 	X, Y, Z float64
 }
 
-// DCSColor implements the Value interface.
-func (c CIE1931XYZColor) DCSColor(mp ModuleProfile) DCSColor {
+var _ Value = &CIE1931XYZColor{}
+
+// IntoDCS implements the Value interface.
+func (c CIE1931XYZColor) IntoDCS(mp ModuleProfile) DCSColor {
 	return mp.XYZToDCS(c)
+}
+
+// FromDCS implements the Value interface.
+func (c *CIE1931XYZColor) FromDCS(mp ModuleProfile, dcsColor DCSColor) error {
+	var err error
+	if *c, err = mp.DCSToXYZ(dcsColor); err != nil {
+		return fmt.Errorf("failed to convert from DCS to %T: %w", c, err)
+	}
+	return nil
 }
 
 // Sum returns the sum of c and all colors.
@@ -55,6 +66,24 @@ type CIE1931xyYColor struct {
 	LuminanceY float64 // Luminance Y in lumen.
 }
 
+var _ Value = &CIE1931xyYColor{}
+
+// IntoDCS implements the Value interface.
+func (c CIE1931xyYColor) IntoDCS(mp ModuleProfile) DCSColor {
+	return mp.XYZToDCS(c.CIE1931XYZColor())
+}
+
+// FromDCS implements the Value interface.
+func (c *CIE1931xyYColor) FromDCS(mp ModuleProfile, dcsColor DCSColor) error {
+	if xyzColor, err := mp.DCSToXYZ(dcsColor); err != nil {
+		return fmt.Errorf("failed to convert from DCS to %T: %w", c, err)
+	} else {
+		sum := xyzColor.X + xyzColor.Y + xyzColor.Z
+		*c = CIE1931xyYColor{xyzColor.X / sum, xyzColor.Y / sum, xyzColor.Y}
+	}
+	return nil
+}
+
 func (c CIE1931xyYColor) CIE1931XYZColor() CIE1931XYZColor {
 	return CIE1931XYZColor{
 		(c.X * c.LuminanceY) / c.Y,
@@ -63,9 +92,9 @@ func (c CIE1931xyYColor) CIE1931XYZColor() CIE1931XYZColor {
 	}
 }
 
-// DCSColor implements the Value interface.
-func (c CIE1931xyYColor) DCSColor(mp ModuleProfile) DCSColor {
-	return mp.XYZToDCS(c.CIE1931XYZColor())
+// Scaled returns c scaled by the scalar s.
+func (c CIE1931xyYColor) Scaled(s float64) CIE1931xyYColor {
+	return CIE1931xyYColor{c.X, c.Y, c.LuminanceY * s}
 }
 
 // DCSColor represents a color in a device color space.
@@ -77,9 +106,24 @@ func (c CIE1931xyYColor) DCSColor(mp ModuleProfile) DCSColor {
 // Example: 5 channels could represent RGB + cold white + warm white.
 type DCSColor []float64
 
-// DCSColor implements the Value interface.
-func (c DCSColor) DCSColor(mp ModuleProfile) DCSColor {
+var _ Value = &DCSColor{}
+
+// Copy returns a copy of c.
+func (c DCSColor) Copy() DCSColor {
+	cCopy := make(DCSColor, c.Channels())
+	copy(cCopy, c)
+	return cCopy
+}
+
+// IntoDCS implements the Value interface.
+func (c DCSColor) IntoDCS(mp ModuleProfile) DCSColor {
 	return c
+}
+
+// FromDCS implements the Value interface.
+func (c *DCSColor) FromDCS(mp ModuleProfile, dcsColor DCSColor) error {
+	*c = dcsColor.Copy()
+	return nil
 }
 
 // Channels returns the amount of channels.
@@ -92,9 +136,9 @@ func (c DCSColor) Channels() int {
 //
 //	DCSColor{1.1, 0.9} --> DCSColor{1.0, 0.9}
 func (c DCSColor) ClampedIndividually() DCSColor {
-	result := make(DCSColor, 0, c.Channels())
-	for _, channel := range c {
-		result = append(result, clamp01(channel))
+	result := c.Copy()
+	for i, channel := range result {
+		result[i] = clamp01(channel)
 	}
 	return result
 }
@@ -118,9 +162,9 @@ func (c DCSColor) Difference(c2 DCSColor) (DCSColor, error) {
 		return nil, fmt.Errorf("mismatching amount of channels %d and %d", c.Channels(), c2.Channels())
 	}
 
-	result := make(DCSColor, 0, c.Channels())
-	for i, channel := range c {
-		result = append(result, channel-c2[i])
+	result := c.Copy()
+	for i, channel := range result {
+		result[i] = channel - c2[i]
 	}
 
 	return result, nil
@@ -145,9 +189,24 @@ func (c DCSColor) ComponentSum() float64 {
 // They can be unclamped, that depends on the context where they are used.
 type LinDCSColor []float64
 
-// DCSColor implements the Value interface.
-func (c LinDCSColor) DCSColor(mp ModuleProfile) DCSColor {
+var _ Value = &LinDCSColor{}
+
+// Copy returns a copy of c.
+func (c LinDCSColor) Copy() LinDCSColor {
+	cCopy := make(LinDCSColor, c.Channels())
+	copy(cCopy, c)
+	return cCopy
+}
+
+// IntoDCS implements the Value interface.
+func (c LinDCSColor) IntoDCS(mp ModuleProfile) DCSColor {
 	return c.ClampedAndDeLinearized(mp.TransferFunction())
+}
+
+// FromDCS implements the Value interface.
+func (c *LinDCSColor) FromDCS(mp ModuleProfile, dcsColor DCSColor) error {
+	*c = dcsColor.Copy().ClampedAndLinearized(mp.TransferFunction())
+	return nil
 }
 
 // Channels returns the amount of channels.
@@ -205,8 +264,7 @@ func (c LinDCSColor) ComponentSum() float64 {
 
 // Sum returns the sum of c and all other colors.
 func (c LinDCSColor) Sum(colors ...LinDCSColor) (LinDCSColor, error) {
-	result := make(LinDCSColor, c.Channels())
-	copy(result, c)
+	result := c.Copy()
 
 	for _, color := range colors {
 		if c.Channels() != color.Channels() {

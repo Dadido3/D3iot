@@ -94,11 +94,11 @@ func (l *Light) Product() *Product {
 	return l.product
 }
 
-// SetColors sets the colors of all the modules in the light device.
-// Colors which are not set are assumed to be turned off.
-// This will return an error if you try to set more colors than there are modules in a light device.
-func (l *Light) SetColors(colors ...emission.Value) error {
-	switch len(colors) {
+// SetColors sets the emission values of all the modules in the light device.
+// Values which are not set are assumed to equal a turned off module.
+// This must return an error if there are more values than there are modules in a light device.
+func (l *Light) SetColors(emissionValues ...emission.ValueIntoDCS) error {
+	switch len(emissionValues) {
 	case 0:
 		pilot := NewPilot(false)
 		return l.SetPilot(pilot)
@@ -107,7 +107,7 @@ func (l *Light) SetColors(colors ...emission.Value) error {
 		moduleProfile := l.ModuleProfiles()[0]
 
 		// Transform dcsColor into DCS.
-		dcsColor := colors[0].DCSColor(moduleProfile)
+		dcsColor := emissionValues[0].IntoDCS(moduleProfile)
 
 		switch dc := l.product.deviceClass; dc {
 		case deviceClassDW:
@@ -137,19 +137,29 @@ func (l *Light) SetColors(colors ...emission.Value) error {
 		}
 
 	default:
-		return fmt.Errorf("supplied %d colors, this device has only 1 module", len(colors))
+		return fmt.Errorf("got %d emission values, this device has only 1 module", len(emissionValues))
 	}
 }
 
-// GetColors queries the light device for all colors of its modules and returns them.
-// This must always returns as much elements as the device has modules, even in case of an error.
-func (l *Light) GetColors() ([]emission.CIE1931XYZColor, error) {
-	pilot, err := l.GetPilot()
-	if err != nil {
-		return []emission.CIE1931XYZColor{{}}, fmt.Errorf("couldn't read pilot: %w", err)
+// GetColors queries the light device for all emission values of its modules and writes them back into the given list emissionValues.
+// This must return an error if there are more values than there are modules in a light device.
+func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
+	// Check number of emission values.
+	switch len(emissionValues) {
+	case 0:
+		return nil
+
+	case 1:
+		// Continue.
+
+	default:
+		return fmt.Errorf("got %d emission values, this device has only 1 module", len(emissionValues))
 	}
 
-	moduleProfile := l.ModuleProfiles()[0]
+	pilot, err := l.GetPilot()
+	if err != nil {
+		return fmt.Errorf("couldn't read pilot: %w", err)
+	}
 
 	// Generate DCS color/vector.
 	var dcsColor emission.DCSColor
@@ -170,12 +180,12 @@ func (l *Light) GetColors() ([]emission.CIE1931XYZColor, error) {
 		}
 
 	default:
-		return []emission.CIE1931XYZColor{{}}, fmt.Errorf("unsupported device class %q", dc)
+		return fmt.Errorf("unsupported device class %q", dc)
 
 	}
 
-	xyzColor, err := moduleProfile.DCSToXYZ(dcsColor)
-	return []emission.CIE1931XYZColor{xyzColor}, err
+	moduleProfile := l.ModuleProfiles()[0]
+	return emissionValues[0].FromDCS(moduleProfile, dcsColor)
 }
 
 // Modules returns the amount of modules.

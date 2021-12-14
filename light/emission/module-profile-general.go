@@ -17,7 +17,7 @@ import (
 //	- Custom transfer functions.
 //	- Custom output limiter functions.
 //
-// You need to call the MustInit() method before this profile can be used.
+// You need to call the Init() or MustInit() method before this profile can be used.
 type ModuleProfileGeneral struct {
 	// WhitePointColor is the brightest color that the module can output.
 	// Usually it's the combination of all white emitters.

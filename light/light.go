@@ -8,18 +8,18 @@ package light
 import "github.com/Dadido3/D3iot/light/emission"
 
 // Light is the common interface for all light devices.
-// It defines the basic methods to set or get colors, and query some of the devices its abilities.
+// It defines the basic methods to set or get colors, and query the device for its abilities.
 //
-// If you more control over the device, you can use a type assertion to get a less general device.
+// If you need more control over the device, you can use a type assertion to get an implementation of the Light interface.
 type Light interface {
-	// SetColors sets the colors of all the modules in the light device.
-	// Colors which are not set are assumed to be turned off.
-	// This will return an error if you try to set more colors than there are modules in a light device.
-	SetColors(colors ...emission.Value) error
+	// SetColors sets the emission values of all the modules in the light device.
+	// Values which are not set are assumed to equal a turned off module.
+	// This will return an error if you try to set more values than there are modules in a light device.
+	SetColors(emissionValues ...emission.ValueIntoDCS) error
 
-	// GetColors queries the light device for all colors of its modules and returns them.
-	// This always returns as much elements as the device as modules, even in case of an error.
-	GetColors() ([]emission.CIE1931XYZColor, error)
+	// GetColors queries the light device for all emission values of its modules and writes them back into the given list emissionValues.
+	// This will return an error if you try to get more values than there are modules in a light device.
+	GetColors(emissionValues ...emission.ValueFromDCS) error
 
 	// Modules returns the amount of modules.
 	// All devices have at least one module, but most devices have just one.
