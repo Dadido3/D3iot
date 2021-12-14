@@ -7,7 +7,7 @@ This package contains everything you need to query and control WiZ light bulbs.
 Install via
 
 ``` shell
-go get github.com/Dadido3/D3iot/light/wiz
+go get github.com/Dadido3/D3iot
 ```
 
 and import
@@ -24,7 +24,7 @@ Once the device has been connected to your Wi-Fi, you can use the app to retriev
 To connect to your device via its IP, use
 
 ``` go
-light := wiz.NewLight("192.168.1.123:38899")
+light, err := wiz.NewLight("192.168.1.123:38899")
 ```
 
 where you have to replace `192.168.1.123` with the corresponding IP of your device.
@@ -32,7 +32,7 @@ where you have to replace `192.168.1.123` with the corresponding IP of your devi
 Alternatively, you can use the DHCP name of the device to connect. As example use
 
 ``` go
-light := wiz.NewLight("wiz-123abc:38899")
+light, err := wiz.NewLight("wiz-123abc:38899")
 ```
 
 where you have to replace `123abc` with the 6 last digits of the device's MAC-Address.
