@@ -12,7 +12,7 @@ import "fmt"
 //	t[0].X t[1].X t[2].X ...
 //	t[0].Y t[1].Y t[2].Y ...
 //	t[0].Z t[1].Z t[2].Z ...
-type TransformationLinDCSToXYZ []CIE1931XYZColor
+type TransformationLinDCSToXYZ []CIE1931XYZAbs
 
 // DCSChannels returns the dimensionality of the device color space.
 // This is equal to m in the m x n transformation matrix.
@@ -32,12 +32,12 @@ func (t TransformationLinDCSToXYZ) Scaled(s float64) TransformationLinDCSToXYZ {
 
 // Multiplied returns the multiplication of t with an in the linear device color space.
 // The result is a CIE 1931 XYZ color.
-func (t TransformationLinDCSToXYZ) Multiplied(v LinDCSColor) (CIE1931XYZColor, error) {
+func (t TransformationLinDCSToXYZ) Multiplied(v LinDCSVector) (CIE1931XYZAbs, error) {
 	if t.DCSChannels() != v.Channels() {
-		return CIE1931XYZColor{}, fmt.Errorf("number of primaries %d doesn't match with the dimensionality %d of the DCS vector", t.DCSChannels(), v.Channels())
+		return CIE1931XYZAbs{}, fmt.Errorf("number of primaries %d doesn't match with the dimensionality %d of the DCS vector", t.DCSChannels(), v.Channels())
 	}
 
-	result := CIE1931XYZColor{}
+	result := CIE1931XYZAbs{}
 
 	for i, primary := range t {
 		result = result.Sum(primary.Scaled(v[i]))
@@ -58,8 +58,8 @@ func (t TransformationLinDCSToXYZ) Inverted() (TransformationXYZToLinDCS, error)
 		// Add two new arbitrary vectors that each are perpendicular to the others.
 		tExt := TransformationLinDCSToXYZ{
 			t[0],
-			t[0].CrossProd(CIE1931XYZColor{1, 0, 0}),
-			t[0].CrossProd(t[0].CrossProd(CIE1931XYZColor{1, 0, 0})),
+			t[0].CrossProd(CIE1931XYZAbs{1, 0, 0}),
+			t[0].CrossProd(t[0].CrossProd(CIE1931XYZAbs{1, 0, 0})),
 		}
 		inv, err := tExt.Inverted()
 		if err != nil {
@@ -122,7 +122,7 @@ func (t TransformationLinDCSToXYZ) Inverted() (TransformationXYZToLinDCS, error)
 //	t[1].X t[1].Y t[1].Z
 //	t[2].X t[2].Y t[2].Z
 //	...    ...    ...
-type TransformationXYZToLinDCS []CIE1931XYZColor
+type TransformationXYZToLinDCS []CIE1931XYZAbs
 
 // DCSChannels returns the dimensionality of the device color space.
 // This is equal to n in a m x n matrix.
@@ -132,8 +132,8 @@ func (t TransformationXYZToLinDCS) DCSChannels() int {
 
 // Multiplied returns the multiplication of t with a color in the XYZ color space.
 // The result is an unclamped vector in the linear device color space.
-func (t TransformationXYZToLinDCS) Multiplied(color CIE1931XYZColor) LinDCSColor {
-	result := make(LinDCSColor, t.DCSChannels())
+func (t TransformationXYZToLinDCS) Multiplied(color CIE1931XYZAbs) LinDCSVector {
+	result := make(LinDCSVector, t.DCSChannels())
 
 	for i, primary := range t {
 		result[i] += primary.X*color.X + primary.Y*color.Y + primary.Z*color.Z

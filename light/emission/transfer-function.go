@@ -9,8 +9,8 @@ import "math"
 
 // TransferFunction is used to transform from device color spaces into linear device colors spaces, and vice versa.
 type TransferFunction interface {
-	Linearize(v DCSColor) LinDCSColor
-	DeLinearize(v LinDCSColor) DCSColor
+	Linearize(v DCSVector) LinDCSVector
+	DeLinearize(v LinDCSVector) DCSVector
 }
 
 // transferFunctionStandardRGB implements the sRGB transfer function.
@@ -19,15 +19,15 @@ type transferFunctionStandardRGB struct{}
 // TransferFunctionStandardRGB implements the sRGB transfer function.
 var TransferFunctionStandardRGB = transferFunctionStandardRGB{}
 
-func (tf transferFunctionStandardRGB) Linearize(values DCSColor) LinDCSColor {
-	result := make(LinDCSColor, 0, values.Channels())
-	for _, value := range values {
+func (tf transferFunctionStandardRGB) Linearize(vector DCSVector) LinDCSVector {
+	result := make(LinDCSVector, 0, vector.Channels())
+	for _, channel := range vector {
 		var trans float64
 
-		if value <= 0.04045 {
-			trans = value / 12.92
+		if channel <= 0.04045 {
+			trans = channel / 12.92
 		} else {
-			trans = math.Pow((value+0.055)/1.055, 2.4)
+			trans = math.Pow((channel+0.055)/1.055, 2.4)
 		}
 
 		result = append(result, trans)
@@ -35,15 +35,15 @@ func (tf transferFunctionStandardRGB) Linearize(values DCSColor) LinDCSColor {
 	return result
 }
 
-func (tf transferFunctionStandardRGB) DeLinearize(values LinDCSColor) DCSColor {
-	result := make(DCSColor, 0, values.Channels())
-	for _, value := range values {
+func (tf transferFunctionStandardRGB) DeLinearize(vector LinDCSVector) DCSVector {
+	result := make(DCSVector, 0, vector.Channels())
+	for _, channel := range vector {
 		var trans float64
 
-		if value <= 0.0031308 {
-			trans = 12.92 * value
+		if channel <= 0.0031308 {
+			trans = 12.92 * channel
 		} else {
-			trans = 1.055*math.Pow(value, 1/2.4) - 0.055
+			trans = 1.055*math.Pow(channel, 1/2.4) - 0.055
 		}
 
 		result = append(result, trans)
@@ -56,18 +56,18 @@ type TransferFunctionGamma struct {
 	Gamma float64
 }
 
-func (tf TransferFunctionGamma) Linearize(values DCSColor) LinDCSColor {
-	result := make(LinDCSColor, 0, values.Channels())
-	for _, value := range values {
-		result = append(result, math.Pow(value, tf.Gamma))
+func (tf TransferFunctionGamma) Linearize(vector DCSVector) LinDCSVector {
+	result := make(LinDCSVector, 0, vector.Channels())
+	for _, channel := range vector {
+		result = append(result, math.Pow(channel, tf.Gamma))
 	}
 	return result
 }
 
-func (tf TransferFunctionGamma) DeLinearize(values LinDCSColor) DCSColor {
-	result := make(DCSColor, 0, values.Channels())
-	for _, value := range values {
-		result = append(result, math.Pow(value, 1/tf.Gamma))
+func (tf TransferFunctionGamma) DeLinearize(vector LinDCSVector) DCSVector {
+	result := make(DCSVector, 0, vector.Channels())
+	for _, channel := range vector {
+		result = append(result, math.Pow(channel, 1/tf.Gamma))
 	}
 	return result
 }

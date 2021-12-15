@@ -15,16 +15,16 @@ import (
 // RGBWPrimaries contains the primaries that a specific WiZ light device uses.
 // This basically describes the color space.
 type RGBWPrimaries struct {
-	R, G, B, CW, WW CIE1931XYZColor
+	R, G, B, CW, WW CIE1931XYZAbs
 }
 
 func NewPrimariesFromValues(values [15]float64) RGBWPrimaries {
 	return RGBWPrimaries{
-		R:  CIE1931XYZColor{values[0], values[1], values[2]},
-		G:  CIE1931XYZColor{values[3], values[4], values[5]},
-		B:  CIE1931XYZColor{values[6], values[7], values[8]},
-		CW: CIE1931XYZColor{values[9], values[10], values[11]},
-		WW: CIE1931XYZColor{values[12], values[13], values[14]},
+		R:  CIE1931XYZAbs{values[0], values[1], values[2]},
+		G:  CIE1931XYZAbs{values[3], values[4], values[5]},
+		B:  CIE1931XYZAbs{values[6], values[7], values[8]},
+		CW: CIE1931XYZAbs{values[9], values[10], values[11]},
+		WW: CIE1931XYZAbs{values[12], values[13], values[14]},
 	}
 }
 
@@ -33,12 +33,12 @@ func (p RGBWPrimaries) Scale(s float64) RGBWPrimaries {
 	return RGBWPrimaries{p.R.Scale(s), p.G.Scale(s), p.B.Scale(s), p.CW.Scale(s), p.WW.Scale(s)}
 }
 
-// Normalize returns p scaled such that value.CIE1931XYZColor(p).Y equals 1.
+// Normalize returns p scaled such that value.CIE1931XYZAbs(p).Y equals 1.
 //
 // If value is {0, 0, 0, 255, 255}, a light bulb that is fully turned on (Only cold and warm white, no RGB) has a CIE 1931 XYZ color of {something, 1, something}.
 // In this case the illuminant is not D65, but some color between the cold and warm white LED.
 func (p RGBWPrimaries) Normalize(value RGBWValue) RGBWPrimaries {
-	c := value.CIE1931XYZColor(p)
+	c := value.CIE1931XYZAbs(p)
 	return p.Scale(1 / c.Y)
 }
 
@@ -53,7 +53,7 @@ func (p RGBWPrimaries) Values() [15]float64 {
 }
 
 // CalculatePrimaries takes a list of matches between the device color space and CIE 1931 XYZ, and returns the color primaries of the WiZ light.
-func CalculatePrimaries(matches map[RGBWValue]CIE1931XYZColor) (RGBWPrimaries, float64, error) {
+func CalculatePrimaries(matches map[RGBWValue]CIE1931XYZAbs) (RGBWPrimaries, float64, error) {
 
 	if len(matches) < 5 {
 		return RGBWPrimaries{}, 0, fmt.Errorf("not enough matches to calculate primaries. Got %d, want %d", len(matches), 5)
@@ -77,7 +77,7 @@ func CalculatePrimaries(matches map[RGBWValue]CIE1931XYZColor) (RGBWPrimaries, f
 
 		for matchRGBW, matchXYZ := range matches {
 
-			transformedXYZ := matchRGBW.CIE1931XYZColor(primaries)
+			transformedXYZ := matchRGBW.CIE1931XYZAbs(primaries)
 			l1, a1, b1 := colorful.XyzToLab(transformedXYZ.X, transformedXYZ.Y, transformedXYZ.Z)
 			l2, a2, b2 := colorful.XyzToLab(matchXYZ.X, matchXYZ.Y, matchXYZ.Z)
 

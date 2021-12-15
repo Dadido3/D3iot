@@ -22,7 +22,7 @@ var staticFiles embed.FS
 var flagDeviceAddress = flag.String("address", "wiz-d47cf3:38899", "The address of the device to be controlled. Example: \"--address wiz-123abc:38899\" or \"--address 192.168.1.123:38899\"")
 var flagServerBind = flag.String("server-bind", ":8081", "The server binding. Example: \"--server-bind :8081\"")
 
-var matches = map[RGBWValue]CIE1931XYZColor{
+var matches = map[RGBWValue]CIE1931XYZAbs{
 	/*{255, 0, 0, 0, 13}:    {0.339, 0.178, 0.020},
 	{0, 208, 0, 12, 23}:   {0.196, 0.354, 0.080},
 	{0, 0, 255, 20, 0}:    {0.157, 0.118, 0.616},
@@ -44,7 +44,7 @@ func main() {
 	}
 	log.Printf("Optimized primaries: %v", primaries)
 	log.Printf("SSR is %f.", ssr)
-	log.Print(RGBWValue{0, 0, 0, 255, 255}.CIE1931XYZColor(primaries))*/
+	log.Print(RGBWValue{0, 0, 0, 255, 255}.CIE1931XYZAbs(primaries))*/
 
 	flag.Parse()
 
@@ -80,7 +80,7 @@ func main() {
 	http.HandleFunc("/api/addDataPoint", func(w http.ResponseWriter, r *http.Request) {
 		var data struct {
 			RGBWValue
-			CIE1931XYZColor
+			CIE1931XYZAbs
 		}
 
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
@@ -89,7 +89,7 @@ func main() {
 		}
 
 		log.Printf("Adding %v to matches list.", data)
-		matches[data.RGBWValue] = data.CIE1931XYZColor
+		matches[data.RGBWValue] = data.CIE1931XYZAbs
 
 		primaries, ssr, err := CalculatePrimaries(matches)
 		if err != nil {

@@ -2,6 +2,14 @@
 
 This package contains everything you need to query and control WiZ light bulbs.
 
+## Features
+
+- Supports setting and getting pilots from WiZ lights.
+- Pilots support all scenes, color temperatures, raw RGBW settings, speed settings and dimming settings.
+- Library automatically detects the model/type of a lamp. See `light.Product()`.
+- Supports color profiles for correct color rendering.
+- Implements `light.Value` which provides a simple interface to set/get colors in a fully color managed manner. This is the preferred way, if you don't need device specific features.
+
 ## Usage
 
 Install via

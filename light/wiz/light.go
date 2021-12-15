@@ -106,29 +106,29 @@ func (l *Light) SetColors(emissionValues ...emission.ValueIntoDCS) error {
 	case 1:
 		moduleProfile := l.ModuleProfiles()[0]
 
-		// Transform dcsColor into DCS.
-		dcsColor := emissionValues[0].IntoDCS(moduleProfile)
+		// Transform emission value into DCS.
+		vector := emissionValues[0].IntoDCS(moduleProfile)
 
 		switch dc := l.product.deviceClass; dc {
 		case deviceClassDW:
-			if dcsColor.Channels() == 1 {
-				return l.SetPilot(NewPilot(true).WithScene(SceneCoolWhite, 100).WithDimming(uint(dcsColor[0] * 100)))
+			if vector.Channels() == 1 {
+				return l.SetPilot(NewPilot(true).WithScene(SceneCoolWhite, 100).WithDimming(uint(vector[0] * 100)))
 			} else {
-				return fmt.Errorf("unexpected number of channels. Got %d, want %d", dcsColor.Channels(), 1)
+				return fmt.Errorf("unexpected number of channels. Got %d, want %d", vector.Channels(), 1)
 			}
 
 		case deviceClassTW:
-			if dcsColor.Channels() == 2 {
-				return l.SetPilot(NewPilotWithWhite(100, uint8(dcsColor[0]*255), uint8(dcsColor[1]*255)))
+			if vector.Channels() == 2 {
+				return l.SetPilot(NewPilotWithWhite(100, uint8(vector[0]*255), uint8(vector[1]*255)))
 			} else {
-				return fmt.Errorf("unexpected number of channels. Got %d, want %d", dcsColor.Channels(), 2)
+				return fmt.Errorf("unexpected number of channels. Got %d, want %d", vector.Channels(), 2)
 			}
 
 		case deviceClassRGBTW:
-			if dcsColor.Channels() == 5 {
-				return l.SetPilot(NewPilotWithRGBW(100, uint8(dcsColor[0]*255), uint8(dcsColor[1]*255), uint8(dcsColor[2]*255), uint8(dcsColor[3]*255), uint8(dcsColor[4]*255)))
+			if vector.Channels() == 5 {
+				return l.SetPilot(NewPilotWithRGBW(100, uint8(vector[0]*255), uint8(vector[1]*255), uint8(vector[2]*255), uint8(vector[3]*255), uint8(vector[4]*255)))
 			} else {
-				return fmt.Errorf("unexpected number of channels. Got %d, want %d", dcsColor.Channels(), 5)
+				return fmt.Errorf("unexpected number of channels. Got %d, want %d", vector.Channels(), 5)
 			}
 
 		default:
@@ -166,27 +166,27 @@ func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
 	}
 
 	// Generate DCS color/vector.
-	var dcsColor emission.DCSColor
+	var vector emission.DCSVector
 	switch dc := l.product.deviceClass; dc {
 	case deviceClassDW:
 		if pilot.State && pilot.HasDimming() {
-			dcsColor = emission.DCSColor{float64(*pilot.Dimming) / 100}
+			vector = emission.DCSVector{float64(*pilot.Dimming) / 100}
 		} else {
-			dcsColor = emission.DCSColor{0}
+			vector = emission.DCSVector{0}
 		}
 
 	case deviceClassTW:
 		if pilot.State && pilot.HasWhite() {
-			dcsColor = emission.DCSColor{float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
+			vector = emission.DCSVector{float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
 		} else {
-			dcsColor = emission.DCSColor{0, 0}
+			vector = emission.DCSVector{0, 0}
 		}
 
 	case deviceClassRGBTW:
 		if pilot.State && pilot.HasRGBW() {
-			dcsColor = emission.DCSColor{float64(*pilot.R) / 255, float64(*pilot.G) / 255, float64(*pilot.B) / 255, float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
+			vector = emission.DCSVector{float64(*pilot.R) / 255, float64(*pilot.G) / 255, float64(*pilot.B) / 255, float64(*pilot.CW) / 255, float64(*pilot.WW) / 255}
 		} else {
-			dcsColor = emission.DCSColor{0, 0, 0, 0, 0}
+			vector = emission.DCSVector{0, 0, 0, 0, 0}
 		}
 
 	default:
@@ -195,7 +195,7 @@ func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
 	}
 
 	moduleProfile := l.ModuleProfiles()[0]
-	return emissionValues[0].FromDCS(moduleProfile, dcsColor)
+	return emissionValues[0].FromDCS(moduleProfile, vector)
 }
 
 // Modules returns the amount of modules.

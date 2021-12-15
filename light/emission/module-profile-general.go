@@ -22,7 +22,7 @@ type ModuleProfileGeneral struct {
 	// WhitePointColor is the brightest color that the module can output.
 	// Usually it's the combination of all white emitters.
 	// Or of all primary emitters, if there are no white ones, or if the whites are are less bright.
-	WhitePointColor CIE1931XYZColor
+	WhitePointColor CIE1931XYZAbs
 
 	// The XYZ values of the primary channels that span the gamut for this module.
 	// All colors that increase the gamut have to go into here.
@@ -81,7 +81,7 @@ func (e *ModuleProfileGeneral) Channels() int {
 
 // WhitePoint returns the white point as a CIE 1931 XYZ color.
 // This is also the brightest color a module can output.
-func (e *ModuleProfileGeneral) WhitePoint() CIE1931XYZColor {
+func (e *ModuleProfileGeneral) WhitePoint() CIE1931XYZAbs {
 	return e.WhitePointColor
 }
 
@@ -92,7 +92,7 @@ func (e *ModuleProfileGeneral) WhitePoint() CIE1931XYZColor {
 //	- RGB emitters.
 //	- RGB + white emitters.
 //	- RGB + cold white + warm white emitters.
-func (e *ModuleProfileGeneral) ChannelPoints() []CIE1931XYZColor {
+func (e *ModuleProfileGeneral) ChannelPoints() []CIE1931XYZAbs {
 	return e.FullTransformation()
 }
 
@@ -105,7 +105,7 @@ func (e *ModuleProfileGeneral) FullTransformation() TransformationLinDCSToXYZ {
 // XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 //
 // Short: XYZ --> device color space.
-func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) DCSColor {
+func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZAbs) DCSVector {
 	// Determine the DCS values of the primary colors.
 	primaryV := e.invPrimaryColors.Multiplied(color)
 
@@ -136,7 +136,7 @@ func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) DCSColor {
 	whiteV = whiteV.Scaled(whiteScaling)
 
 	// Put all values into one slice.
-	linV := make(LinDCSColor, 0, primaryV.Channels()+whiteV.Channels())
+	linV := make(LinDCSVector, 0, primaryV.Channels()+whiteV.Channels())
 	linV = append(append(linV, primaryV...), whiteV...)
 
 	// Limit output.
@@ -153,9 +153,9 @@ func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZColor) DCSColor {
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.
 //
 // Short: Device color space --> XYZ.
-func (e *ModuleProfileGeneral) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
+func (e *ModuleProfileGeneral) DCSToXYZ(v DCSVector) (CIE1931XYZAbs, error) {
 	if v.Channels() != e.Channels() {
-		return CIE1931XYZColor{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
+		return CIE1931XYZAbs{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
 	}
 
 	linV := v.ClampedAndLinearized(e.TransferFunc)
@@ -167,10 +167,10 @@ func (e *ModuleProfileGeneral) DCSToXYZ(v DCSColor) (CIE1931XYZColor, error) {
 	// Calculate resulting color.
 	// This is just the linear combination of all column vectors of the transformation matrix.
 
-	result := CIE1931XYZColor{}
+	result := CIE1931XYZAbs{}
 
 	if color, err := e.FullTransformation().Multiplied(linV); err != nil {
-		return CIE1931XYZColor{}, fmt.Errorf("failed to multiply transformation matrix with a linear device color space vector: %w", err)
+		return CIE1931XYZAbs{}, fmt.Errorf("failed to multiply transformation matrix with a linear device color space vector: %w", err)
 	} else {
 		result = result.Sum(color)
 	}

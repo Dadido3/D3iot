@@ -17,7 +17,7 @@ type ModuleProfile interface {
 
 	// WhitePoint returns the white point as a CIE 1931 XYZ color.
 	// This is also the brightest color a module can output.
-	WhitePoint() CIE1931XYZColor
+	WhitePoint() CIE1931XYZAbs
 
 	// ChannelPoints returns a list of channel colors.
 	// Depending on the module type, this could be the colors for:
@@ -26,17 +26,17 @@ type ModuleProfile interface {
 	//	- RGB emitters.
 	//	- RGB + white emitters.
 	//	- RGB + cold white + warm white emitters.
-	ChannelPoints() []CIE1931XYZColor
+	ChannelPoints() []CIE1931XYZAbs
 
 	// XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 	//
 	// Short: XYZ --> device color space.
-	XYZToDCS(color CIE1931XYZColor) DCSColor
+	XYZToDCS(color CIE1931XYZAbs) DCSVector
 
 	// DCSToXYZ takes a vector from the device color space and returns the color it represents.
 	//
 	// Short: Device color space --> XYZ.
-	DCSToXYZ(v DCSColor) (CIE1931XYZColor, error)
+	DCSToXYZ(v DCSVector) (CIE1931XYZAbs, error)
 
 	TransferFunction() TransferFunction
 }

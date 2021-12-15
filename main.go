@@ -17,6 +17,7 @@ func main() {
 	light, err := wiz.NewLight("wiz-d47cf3:38899")
 	if err != nil {
 		log.Printf("wiz.NewLight() failed: %v", err)
+		return
 	}
 
 	/*if err := light.Pulse(50, 100*time.Millisecond); err != nil {
@@ -90,16 +91,16 @@ func main() {
 
 	//moduleProfile := light.ModuleProfiles()[0]
 
-	//emissionValue := emission.CIE1931XYZColor{X: 0.95047, Y: 1, Z: 1.08883}.Scaled(1521 * 0.1)
-	//emissionValue := moduleProfile.WhitePoint().Scaled(0.1)
-	//emissionValue := emission.StandardIlluminantA.Scaled(300)
-	emissionValue := emission.BlackBodyFixed{Temperature: 2200, Luminance: 200}
+	//emissionValue := emission.CIE1931XYZAbs{X: 0.95047, Y: 1, Z: 1.08883}.Scaled(1521 * 0.1)
+	//emissionValue := moduleProfile.WhitePoint().Scaled(0.13)
+	//emissionValue := emission.StandardIlluminantA.Scaled(200)
+	emissionValue := emission.BlackBodyFixed{Temperature: 2800, Luminance: 200}
 
 	if err := light.SetColors(emissionValue); err != nil {
 		log.Printf("light.SetColors() failed: %v", err)
 	}
 
-	var res emission.CIE1931XYZColor
+	var res emission.CIE1931XYZAbs
 	if err := light.GetColors(&res); err != nil {
 		log.Printf("light.GetColors() failed: %v", err)
 	} else {

@@ -9,16 +9,16 @@ package emission
 //
 // Every type that represents some sort of light emission should implement this interface.
 type Value interface {
-	IntoDCS(ModuleProfile) DCSColor        // IntoDCS returns the value transformed into the device color space.
-	FromDCS(ModuleProfile, DCSColor) error // FromDCS transforms the device color space vector into the color space of Value.
+	IntoDCS(ModuleProfile) DCSVector        // IntoDCS returns the value transformed into the device color space.
+	FromDCS(ModuleProfile, DCSVector) error // FromDCS transforms the device color space vector into the color space of Value.
 }
 
 // ValueIntoDCS is the Value into DCS transformation part of the Value interface.
 type ValueIntoDCS interface {
-	IntoDCS(ModuleProfile) DCSColor // IntoDCS returns the value transformed into the device color space.
+	IntoDCS(ModuleProfile) DCSVector // IntoDCS returns the value transformed into the device color space.
 }
 
 // ValueIntoDCS is the DCS into Value transformation part of the Value interface.
 type ValueFromDCS interface {
-	FromDCS(ModuleProfile, DCSColor) error // FromDCS transforms the device color space vector into the color space of Value.
+	FromDCS(ModuleProfile, DCSVector) error // FromDCS transforms the device color space vector into the color space of Value.
 }

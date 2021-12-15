@@ -18,17 +18,17 @@ type BlackBodyFixed struct {
 var _ ValueIntoDCS = &BlackBodyFixed{} // TODO: Implement transformation from DCS
 
 // IntoDCS implements the Value interface.
-func (b BlackBodyFixed) IntoDCS(mp ModuleProfile) DCSColor {
-	return mp.XYZToDCS(b.CIE1931XYZColor())
+func (b BlackBodyFixed) IntoDCS(mp ModuleProfile) DCSVector {
+	return mp.XYZToDCS(b.CIE1931XYZAbs())
 }
 
 // FromDCS implements the Value interface.
-/*func (b *BlackBodyFixed) FromDCS(mp ModuleProfile, c DCSColor) error {
+/*func (b *BlackBodyFixed) FromDCS(mp ModuleProfile, v DCSVector) error {
 	// Calculate CCT.
 	return fmt.Errorf("conversion from DCS to %T not implemented yet", b)
 }*/
 
-func (b BlackBodyFixed) CIE1931xyYColor() CIE1931xyYColor {
+func (b BlackBodyFixed) CIE1931xyYAbs() CIE1931xyYAbs {
 	// Source: https://en.wikipedia.org/wiki/Planckian_locus.
 
 	t := b.Temperature
@@ -40,7 +40,7 @@ func (b BlackBodyFixed) CIE1931xyYColor() CIE1931xyYColor {
 	case t >= 4000 && t <= 25000:
 		x = -3.0258469e9/t/t/t + 2.1070379e6/t/t + 0.2226347e3/t + 0.240390
 	default:
-		return CIE1931xyYColor{0.3, 0.3, 0}
+		return CIE1931xyYAbs{0.3, 0.3, 0}
 	}
 
 	var y float64
@@ -52,12 +52,12 @@ func (b BlackBodyFixed) CIE1931xyYColor() CIE1931xyYColor {
 	case t >= 4000 && t <= 25000:
 		y = +3.0817580*x*x*x - 5.87338670*x*x + 3.75112997*x - 0.37001483
 	default:
-		return CIE1931xyYColor{0.3, 0.3, 0}
+		return CIE1931xyYAbs{0.3, 0.3, 0}
 	}
 
-	return CIE1931xyYColor{x, y, b.Luminance}
+	return CIE1931xyYAbs{x, y, b.Luminance}
 }
 
-func (b BlackBodyFixed) CIE1931XYZColor() CIE1931XYZColor {
-	return b.CIE1931xyYColor().CIE1931XYZColor()
+func (b BlackBodyFixed) CIE1931XYZAbs() CIE1931XYZAbs {
+	return b.CIE1931xyYAbs().CIE1931XYZAbs()
 }

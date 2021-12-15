@@ -5,21 +5,21 @@
 
 package main
 
-// CIE1931XYZColor represents a color according to the CIE 1931 XYZ standard.
+// CIE1931XYZAbs represents a color according to the CIE 1931 XYZ standard.
 // The component Y is in the range [0, 1].
 // The X and Z components are somewhat in the range [0, 1].
-type CIE1931XYZColor struct {
+type CIE1931XYZAbs struct {
 	X, Y, Z float64
 }
 
 // Add returns the sum of c and c2.
-func (c CIE1931XYZColor) Add(c2 CIE1931XYZColor) CIE1931XYZColor {
-	return CIE1931XYZColor{c.X + c2.X, c.Y + c2.Y, c.Z + c2.Z}
+func (c CIE1931XYZAbs) Add(c2 CIE1931XYZAbs) CIE1931XYZAbs {
+	return CIE1931XYZAbs{c.X + c2.X, c.Y + c2.Y, c.Z + c2.Z}
 }
 
 // Scale returns c scaled by the scalar s
-func (c CIE1931XYZColor) Scale(s float64) CIE1931XYZColor {
-	return CIE1931XYZColor{c.X * s, c.Y * s, c.Z * s}
+func (c CIE1931XYZAbs) Scale(s float64) CIE1931XYZAbs {
+	return CIE1931XYZAbs{c.X * s, c.Y * s, c.Z * s}
 }
 
 // RGBWValue represents a color in the color space of a specific WiZ light device.
@@ -34,9 +34,9 @@ type RGBWValue struct {
 	R, G, B, CW, WW uint8
 }
 
-// CIE1931XYZColor combines the values with the given primaries, and returns a color in the CIE 1931 XYZ space.
-func (v RGBWValue) CIE1931XYZColor(primaries RGBWPrimaries) CIE1931XYZColor {
-	c := CIE1931XYZColor{}
+// CIE1931XYZAbs combines the values with the given primaries, and returns a color in the CIE 1931 XYZ space.
+func (v RGBWValue) CIE1931XYZAbs(primaries RGBWPrimaries) CIE1931XYZAbs {
+	c := CIE1931XYZAbs{}
 
 	r := primaries.R.Scale(float64(v.R) / 255)
 	g := primaries.G.Scale(float64(v.G) / 255)

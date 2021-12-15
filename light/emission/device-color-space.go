@@ -10,74 +10,74 @@ import (
 	"math"
 )
 
-// DCSColor represents a color in a device color space.
+// DCSVector represents a color in a device color space.
 // This is more or less what is sent to the light device.
 //
 // If clamped, the values are in the range [0, 1].
-// They can be unclamped, that depends on the context where they are used.
+// They may or may not be clamped, that depends on the context where they are used.
 //
 // Example: 5 channels could represent RGB + cold white + warm white.
-type DCSColor []float64
+type DCSVector []float64
 
-var _ Value = &DCSColor{}
+var _ Value = &DCSVector{}
 
 // Copy returns a copy of c.
-func (c DCSColor) Copy() DCSColor {
-	cCopy := make(DCSColor, c.Channels())
-	copy(cCopy, c)
-	return cCopy
+func (v DCSVector) Copy() DCSVector {
+	vCopy := make(DCSVector, v.Channels())
+	copy(vCopy, v)
+	return vCopy
 }
 
 // IntoDCS implements the Value interface.
-func (c DCSColor) IntoDCS(mp ModuleProfile) DCSColor {
-	return c
+func (v DCSVector) IntoDCS(mp ModuleProfile) DCSVector {
+	return v
 }
 
 // FromDCS implements the Value interface.
-func (c *DCSColor) FromDCS(mp ModuleProfile, dcsColor DCSColor) error {
-	*c = dcsColor.Copy()
+func (v *DCSVector) FromDCS(mp ModuleProfile, v2 DCSVector) error {
+	*v = v2.Copy()
 	return nil
 }
 
 // Channels returns the amount of channels.
 // This is the dimensionality of the DCS.
-func (c DCSColor) Channels() int {
-	return len(c)
+func (v DCSVector) Channels() int {
+	return len(v)
 }
 
 // ClampedIndividually returns all channels individually clamped into the range [0, 1].
 //
-//	DCSColor{1.1, 0.9} --> DCSColor{1.0, 0.9}
-func (c DCSColor) ClampedIndividually() DCSColor {
-	result := c.Copy()
+//	DCSVector{1.1, 0.9, -0.1} --> DCSVector{1.0, 0.9, 0.0}
+func (v DCSVector) ClampedIndividually() DCSVector {
+	result := v.Copy()
 	for i, channel := range result {
 		result[i] = clamp01(channel)
 	}
 	return result
 }
 
-// ClampedAndLinearized returns c transformed into linear device color space by the given transfer function tf.
+// ClampedAndLinearized returns v transformed into linear device color space by the given transfer function tf.
 // This clamps the values before transforming them.
-func (c DCSColor) ClampedAndLinearized(tf TransferFunction) LinDCSColor {
+func (v DCSVector) ClampedAndLinearized(tf TransferFunction) LinDCSVector {
 	if tf != nil {
-		return tf.Linearize(c.ClampedIndividually())
+		return tf.Linearize(v.ClampedIndividually())
 	}
 
 	// Transfer function is linear.
-	return LinDCSColor(c.ClampedIndividually())
+	return LinDCSVector(v.ClampedIndividually())
 }
 
-// Difference returns the difference c - c2.
+// Difference returns the difference v - v2.
 //
 // This may or may not make sense to use, as this is not a linear space.
-func (c DCSColor) Difference(c2 DCSColor) (DCSColor, error) {
-	if c.Channels() != c2.Channels() {
-		return nil, fmt.Errorf("mismatching amount of channels %d and %d", c.Channels(), c2.Channels())
+func (v DCSVector) Difference(v2 DCSVector) (DCSVector, error) {
+	if v.Channels() != v2.Channels() {
+		return nil, fmt.Errorf("mismatching amount of channels %d and %d", v.Channels(), v2.Channels())
 	}
 
-	result := c.Copy()
+	result := v.Copy()
 	for i, channel := range result {
-		result[i] = channel - c2[i]
+		result[i] = channel - v2[i]
 	}
 
 	return result, nil
@@ -87,53 +87,53 @@ func (c DCSColor) Difference(c2 DCSColor) (DCSColor, error) {
 // No clamp is applied.
 //
 // This may or may not make sense to use, as this is not a linear space.
-func (c DCSColor) ComponentSum() float64 {
+func (v DCSVector) ComponentSum() float64 {
 	var result float64
-	for _, channel := range c {
+	for _, channel := range v {
 		result += channel
 	}
 	return result
 }
 
-// LinDCSColor represents a color in a linear device color space.
+// LinDCSVector represents a color in a linear device color space.
 // This is more or less what is sent to the light device, but linearized.
 //
 // If clamped, the values are in the range [0, 1].
-// They can be unclamped, that depends on the context where they are used.
-type LinDCSColor []float64
+// They may or may not be clamped, that depends on the context where they are used.
+type LinDCSVector []float64
 
-var _ Value = &LinDCSColor{}
+var _ Value = &LinDCSVector{}
 
 // Copy returns a copy of c.
-func (c LinDCSColor) Copy() LinDCSColor {
-	cCopy := make(LinDCSColor, c.Channels())
-	copy(cCopy, c)
-	return cCopy
+func (v LinDCSVector) Copy() LinDCSVector {
+	vCopy := make(LinDCSVector, v.Channels())
+	copy(vCopy, v)
+	return vCopy
 }
 
 // IntoDCS implements the Value interface.
-func (c LinDCSColor) IntoDCS(mp ModuleProfile) DCSColor {
-	return c.ClampedAndDeLinearized(mp.TransferFunction())
+func (v LinDCSVector) IntoDCS(mp ModuleProfile) DCSVector {
+	return v.ClampedAndDeLinearized(mp.TransferFunction())
 }
 
 // FromDCS implements the Value interface.
-func (c *LinDCSColor) FromDCS(mp ModuleProfile, dcsColor DCSColor) error {
-	*c = dcsColor.Copy().ClampedAndLinearized(mp.TransferFunction())
+func (v *LinDCSVector) FromDCS(mp ModuleProfile, v2 DCSVector) error {
+	*v = v2.ClampedAndLinearized(mp.TransferFunction())
 	return nil
 }
 
 // Channels returns the amount of channels.
 // This is the dimensionality of the DCS.
-func (c LinDCSColor) Channels() int {
-	return len(c)
+func (v LinDCSVector) Channels() int {
+	return len(v)
 }
 
 // ClampedIndividually returns all channels individually clamped into the range [0, 1].
 //
-//	LinDCSColor{1.1, 0.9} --> LinDCSColor{1.0, 0.9}
-func (c LinDCSColor) ClampedIndividually() LinDCSColor {
-	result := make(LinDCSColor, 0, c.Channels())
-	for _, channel := range c {
+//	LinDCSVector{1.1, 0.9, -0.1} --> LinDCSVector{1.0, 0.9, 0.0}
+func (v LinDCSVector) ClampedIndividually() LinDCSVector {
+	result := make(LinDCSVector, 0, v.Channels())
+	for _, channel := range v {
 		result = append(result, clamp01(channel))
 	}
 	return result
@@ -141,10 +141,10 @@ func (c LinDCSColor) ClampedIndividually() LinDCSColor {
 
 // ClampedToPositive returns all channels individually clamped into the range [0, +inf].
 //
-//	LinDCSColor{1.1, 0.9, -0.1} --> LinDCSColor{1.1, 0.9, 0.0}
-func (c LinDCSColor) ClampedToPositive() LinDCSColor {
-	result := make(LinDCSColor, 0, c.Channels())
-	for _, channel := range c {
+//	LinDCSVector{1.1, 0.9, -0.1} --> LinDCSVector{1.1, 0.9, 0.0}
+func (v LinDCSVector) ClampedToPositive() LinDCSVector {
+	result := make(LinDCSVector, 0, v.Channels())
+	for _, channel := range v {
 		if channel >= 0 {
 			result = append(result, channel)
 		} else {
@@ -154,36 +154,36 @@ func (c LinDCSColor) ClampedToPositive() LinDCSColor {
 	return result
 }
 
-// ClampedAndDeLinearized returns c transformed into device color space by the given transfer function tf.
+// ClampedAndDeLinearized returns v transformed into device color space by the given transfer function tf.
 // This clamps the values before transforming them.
-func (c LinDCSColor) ClampedAndDeLinearized(tf TransferFunction) DCSColor {
+func (v LinDCSVector) ClampedAndDeLinearized(tf TransferFunction) DCSVector {
 	if tf != nil {
-		return tf.DeLinearize(c.ClampedIndividually())
+		return tf.DeLinearize(v.ClampedIndividually())
 	}
 
 	// Transfer function is linear.
-	return DCSColor(c.ClampedIndividually())
+	return DCSVector(v.ClampedIndividually())
 }
 
 // ComponentSum returns the sum of all components.
 // No clamp is applied.
-func (c LinDCSColor) ComponentSum() float64 {
+func (v LinDCSVector) ComponentSum() float64 {
 	var result float64
-	for _, channel := range c {
+	for _, channel := range v {
 		result += channel
 	}
 	return result
 }
 
-// Sum returns the sum of c and all other colors.
-func (c LinDCSColor) Sum(colors ...LinDCSColor) (LinDCSColor, error) {
-	result := c.Copy()
+// Sum returns the sum of v and all other vectors.
+func (v LinDCSVector) Sum(vectors ...LinDCSVector) (LinDCSVector, error) {
+	result := v.Copy()
 
-	for _, color := range colors {
-		if c.Channels() != color.Channels() {
-			return nil, fmt.Errorf("mismatching amount of channels %d and %d", c.Channels(), color.Channels())
+	for _, vector := range vectors {
+		if v.Channels() != vector.Channels() {
+			return nil, fmt.Errorf("mismatching amount of channels %d and %d", v.Channels(), vector.Channels())
 		}
-		for i, channel := range color {
+		for i, channel := range vector {
 			result[i] += channel
 		}
 	}
@@ -191,43 +191,43 @@ func (c LinDCSColor) Sum(colors ...LinDCSColor) (LinDCSColor, error) {
 	return result, nil
 }
 
-// Difference returns the difference c - c2.
+// Difference returns the difference v - v2.
 //
 // This may or may not make sense to use, as this is not a linear space.
-func (c LinDCSColor) Difference(c2 LinDCSColor) (LinDCSColor, error) {
-	if c.Channels() != c2.Channels() {
-		return nil, fmt.Errorf("mismatching amount of channels %d and %d", c.Channels(), c2.Channels())
+func (v LinDCSVector) Difference(v2 LinDCSVector) (LinDCSVector, error) {
+	if v.Channels() != v2.Channels() {
+		return nil, fmt.Errorf("mismatching amount of channels %d and %d", v.Channels(), v2.Channels())
 	}
 
-	result := make(LinDCSColor, 0, c.Channels())
-	for i, channel := range c {
-		result = append(result, channel-c2[i])
+	result := make(LinDCSVector, 0, v.Channels())
+	for i, channel := range v {
+		result = append(result, channel-v2[i])
 	}
 
 	return result, nil
 }
 
-// Scaled returns c scaled by the scalar s.
-func (c LinDCSColor) Scaled(s float64) LinDCSColor {
-	result := make(LinDCSColor, 0, c.Channels())
-	for _, channel := range c {
+// Scaled returns v scaled by the scalar s.
+func (v LinDCSVector) Scaled(s float64) LinDCSVector {
+	result := make(LinDCSVector, 0, v.Channels())
+	for _, channel := range v {
 		result = append(result, channel*s)
 	}
 	return result
 }
 
-// ScaledToPositiveDifference returns a scaling factor s in a way so that c - c2*s doesn't result in any negative channel values.
+// ScaledToPositiveDifference returns a scaling factor s in a way so that v - v2*s doesn't result in any negative channel values.
 // The result is clamped to [0, 1]
 // TODO: Find better name, there must be some mathematical concept that describes this
-func (c LinDCSColor) ScaledToPositiveDifference(c2 LinDCSColor) (float64, error) {
-	if c.Channels() != c2.Channels() {
-		return 0, fmt.Errorf("mismatching amount of channels %d and %d", c.Channels(), c2.Channels())
+func (v LinDCSVector) ScaledToPositiveDifference(v2 LinDCSVector) (float64, error) {
+	if v.Channels() != v2.Channels() {
+		return 0, fmt.Errorf("mismatching amount of channels %d and %d", v.Channels(), v2.Channels())
 	}
 
 	sMin := 1.0
 
-	for i, channel := range c {
-		s := channel / c2[i]
+	for i, channel := range v {
+		s := channel / v2[i]
 		if sMin > s && !math.IsNaN(s) {
 			sMin = s
 		}

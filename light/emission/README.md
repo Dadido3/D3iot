@@ -26,23 +26,22 @@ There are two main color spaces that the lib uses.
 The CIE 1931 XYZ color space, and the device color space (DCS).
 
 ``` go
-xyzColor := CIE1931XYZColor{1500, 1600, 1400}
-dcsColor := DCSColor{0.5,0.5,0.5,0.5,0.5}
+xyzColor := CIE1931XYZAbs{1500, 1600, 1400}
+dcsVector := DCSVector{0.5,0.5,0.5,0.5,0.5}
 ```
 
 - `xyzColor` describes some color with a luminance of 1600 lumen.
-- `dcsColor` describes a color in the device color space.
+- `dcsVector` describes a vector/color in the device color space.
 
 ### Module profiles
 
 Setting up a profile for a module that can be used to transform color spaces is simple.
-A module is just a thing that can output color by using a set of light emitting things of different color.
 
 ``` go
 moduleProfile := &ModuleProfileGeneral{
-    WhitePointColor:  CIE1931XYZColor{}.Sum(standardRGBRed, standardRGBGreen, standardRGBBlue),
+    WhitePointColor:  CIE1931XYZAbs{}.Sum(standardRGBRed, standardRGBGreen, standardRGBBlue),
     PrimaryColors:    TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
-    WhiteColors:      TransformationLinDCSToXYZ{CIE1931XYZColor{30, 30, 30}},
+    WhiteColors:      TransformationLinDCSToXYZ{CIE1931XYZAbs{30, 30, 30}},
     OutputLimiter:    OutputLimiterSum{3},
     TransferFunction: TransferFunctionStandardRGB,
 }
@@ -60,8 +59,8 @@ moduleProfile.MustInit() // Precalculate some internal values.
 `moduleProfile` can then be used to transform between color spaces.
 
 ``` go
-xyzColor, err := moduleProfile.DCSToXYZ(dcsColor)
-dcsColor := moduleProfile.XYZToDCS(xyzColor)
+xyzColor, err := moduleProfile.DCSToXYZ(dcsVector)
+dcsVector := moduleProfile.XYZToDCS(xyzColor)
 ```
 
 ### Value interface
