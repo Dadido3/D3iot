@@ -45,7 +45,7 @@ The following shows some example light emitters.
 
 ``` go
 // XYZ values of the standard illuminant D65 with an absolute luminance of 500 lumen.
-xyzColor := emission.CIE1931XYZAbs{X: 0.95047, Y: 1, Z: 1.08883}.Scaled(500) 
+xyzColor := emission.CIE1931XYZRel{X: 0.95047, Y: 1, Z: 1.08883}.Absolute(500) 
 
 // xyY values of the standard illuminant D65 with an absolute luminance of 500 lumen.
 xyYColor := emission.CIE1931xyYAbs{X: 0.31271, Y: 0.32902, LuminanceZ: 500}
@@ -61,8 +61,8 @@ dcsRGBColor := emission.DCSVector{0.1, 0.2, 1.0}
 // Black body radiator with 5000 K color temperature and a luminance of 500 lumen.
 blackbodyColor := emission.BlackBodyFixed{Temperature: 5000, Luminance: 500}
 
-// CIE standard illuminant A with a luminance of 400 lumen.
-incandescent := emission.StandardIlluminantA.Scaled(400)
+// CIE standard illuminant A with an absolute luminance of 400 lumen.
+incandescent := emission.StandardIlluminantA.Absolute(400)
 ```
 
 These colors can then be passed to any light by using the `SetColors()` method.

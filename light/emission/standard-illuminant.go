@@ -7,48 +7,48 @@ package emission
 
 var (
 	// StandardIlluminantA represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantA.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
-	StandardIlluminantA = CIE1931xyYAbs{0.44757, 0.40745, 1}
+	//	col := StandardIlluminantA.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantA.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
+	StandardIlluminantA = CIE1931xyYRel{0.44757, 0.40745, 1}
 
 	// StandardIlluminantB represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantB.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
-	StandardIlluminantB = CIE1931xyYAbs{0.34842, 0.35161, 1}
+	//	col := StandardIlluminantB.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantB.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
+	StandardIlluminantB = CIE1931xyYRel{0.34842, 0.35161, 1}
 
 	// StandardIlluminantC represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantC.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
-	StandardIlluminantC = CIE1931xyYAbs{0.31006, 0.31616, 1}
+	//	col := StandardIlluminantC.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantC.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
+	StandardIlluminantC = CIE1931xyYRel{0.31006, 0.31616, 1}
 
 	// StandardIlluminantD50 represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantD50.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
-	StandardIlluminantD50 = CIE1931xyYAbs{0.34567, 0.35850, 1}
+	//	col := StandardIlluminantD50.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantD50.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
+	StandardIlluminantD50 = CIE1931xyYRel{0.34567, 0.35850, 1}
 
 	// StandardIlluminantD55 represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantD55.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
-	StandardIlluminantD55 = CIE1931xyYAbs{0.33242, 0.35850, 1}
+	//	col := StandardIlluminantD55.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantD55.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
+	StandardIlluminantD55 = CIE1931xyYRel{0.33242, 0.35850, 1}
 
 	// StandardIlluminantD65 represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantD65.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
-	StandardIlluminantD65 = CIE1931xyYAbs{0.31271, 0.32902, 1}
+	//	col := StandardIlluminantD65.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantD65.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
+	StandardIlluminantD65 = CIE1931xyYRel{0.31271, 0.32902, 1}
 
 	// StandardIlluminantD75 represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantD75.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
-	StandardIlluminantD75 = CIE1931xyYAbs{0.29902, 0.31485, 1}
+	//	col := StandardIlluminantD75.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantD75.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
+	StandardIlluminantD75 = CIE1931xyYRel{0.29902, 0.31485, 1}
 
 	// StandardIlluminantD93 represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantD93.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
-	StandardIlluminantD93 = CIE1931xyYAbs{0.28315, 0.29711, 1}
+	//	col := StandardIlluminantD93.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantD93.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
+	StandardIlluminantD93 = CIE1931xyYRel{0.28315, 0.29711, 1}
 
 	// StandardIlluminantE represents a CIE standard illuminant.
-	// Use the Scaled(s) method to change the luminosity:
-	//	col := StandardIlluminantE.Scaled(789) // Returns the illuminant with a luminosity of 789 lumens.
+	//	col := StandardIlluminantE.Absolute(789) // Returns the illuminant with an absolute luminosity of 789 lumens.
+	//	col := StandardIlluminantE.Scaled(0.5)   // Returns the illuminant at half the max. brightness of the device/module.
 	StandardIlluminantE = CIE1931XYZAbs{1, 1, 1}
 )
 

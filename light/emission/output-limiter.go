@@ -17,6 +17,7 @@ type OutputLimiterSum struct {
 	Limit float64
 }
 
+// LimitDCS implements OutputLimiter.
 func (ol OutputLimiterSum) LimitDCS(v LinDCSVector) LinDCSVector {
 	sum := v.ComponentSum()
 
