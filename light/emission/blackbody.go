@@ -5,6 +5,8 @@
 
 package emission
 
+import "math"
+
 // BlackBodyFixed represents the emission of black body radiator with a fixed luminance in lumen.
 //
 // This doesn't return a color of a daylight temperature.
@@ -60,4 +62,35 @@ func (b BlackBodyFixed) CIE1931xyYAbs() CIE1931xyYAbs {
 
 func (b BlackBodyFixed) CIE1931XYZAbs() CIE1931XYZAbs {
 	return b.CIE1931xyYAbs().CIE1931XYZAbs()
+}
+
+// BlackBody represents the emission of black body radiator with a given area.
+//
+// This doesn't return a color of a daylight temperature.
+type BlackBodyArea struct {
+	Temperature float64 // Temperature in K.
+	Area        float64 // Area in m².
+}
+
+var _ ValueIntoDCS = &BlackBodyArea{} // TODO: Implement transformation from DCS
+
+// IntoDCS implements the Value interface.
+func (b BlackBodyArea) IntoDCS(mp ModuleProfile) DCSVector {
+	return mp.XYZToDCS(b.CIE1931XYZAbs())
+}
+
+func (b BlackBodyArea) CIE1931XYZAbs() CIE1931XYZAbs {
+	const ℎ = 6.62607015e-34 // In J/Hz.
+	const c = 299_792_458.0  // In m/s.
+	const k = 1.380649e-23   // In J/K.
+
+	const c1, c2 = 2 * math.Pi * ℎ * c * c, ℎ * c / k
+
+	f := func(λ, bandwidth float64) (Φe float64) {
+		// Approximate integral with rectangles.
+		return bandwidth * c1 / math.Pow(λ, 5) / (math.Exp(c2/λ/b.Temperature) - 1)
+	}
+
+	x, y, z := StandardObserverCIE1931.Integrate(f)
+	return CIE1931XYZAbs{x, y, z}.Scaled(b.Area) // Scale by area to get the unit right.
 }

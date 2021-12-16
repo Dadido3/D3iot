@@ -5,6 +5,8 @@
 
 package emission
 
+// TODO: Consider renaming ModuleProfile into just ColorProfile. That better describes what it does
+
 // ModuleProfile describes a set of light emitting things that together generate a single color impression.
 //
 // This contains everything that is necessary to convert from the CIE 1931 XYZ color space into the device color space, and vice versa.
@@ -26,7 +28,7 @@ type ModuleProfile interface {
 	//	- RGB emitters.
 	//	- RGB + white emitters.
 	//	- RGB + cold white + warm white emitters.
-	ChannelPoints() []CIE1931XYZAbs
+	ChannelPoints() []CIE1931XYZAbs // TODO: Find better name, you don't get channel points for watching your light bulb glow
 
 	// XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 	//

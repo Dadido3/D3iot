@@ -106,10 +106,10 @@ func (e *ModuleProfileGeneral) FullTransformation() TransformationLinDCSToXYZ {
 //
 // Short: XYZ --> device color space.
 func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZAbs) DCSVector {
-	// Determine the DCS values of the primary colors.
+	// Determine the DCS values of the primary channels.
 	primaryV := e.invPrimaryColors.Multiplied(color)
 
-	// Determine the closest possible DCS values of the white colors.
+	// Determine the closest possible DCS values of the white channels.
 	whiteV := e.invWhiteColors.Multiplied(color).ClampedToPositive()
 	// Get the color of whiteValues
 	whiteColor, err := e.WhiteColors.Multiplied(whiteV)

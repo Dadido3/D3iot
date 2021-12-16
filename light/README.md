@@ -48,7 +48,7 @@ The following shows some example light emitters.
 xyzColor := emission.CIE1931XYZRel{X: 0.95047, Y: 1, Z: 1.08883}.Absolute(500) 
 
 // xyY values of the standard illuminant D65 with an absolute luminance of 500 lumen.
-xyYColor := emission.CIE1931xyYAbs{X: 0.31271, Y: 0.32902, LuminanceZ: 500}
+xyYColor := emission.CIE1931xyYAbs{X: 0.31271, Y: 0.32902, LuminanceY: 500}
 
 // Value in linear device color space. The resulting color depends on the device.
 // The example is for modules with 1 channels.

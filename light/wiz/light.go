@@ -170,7 +170,7 @@ func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
 	switch dc := l.product.deviceClass; dc {
 	case deviceClassDW:
 		if pilot.State && pilot.HasDimming() {
-			vector = emission.DCSVector{float64(*pilot.Dimming) / 100}
+			vector = emission.DCSVector{float64(*pilot.Dimming) / 100} // TODO: Use a better rounding method
 		} else {
 			vector = emission.DCSVector{0}
 		}
