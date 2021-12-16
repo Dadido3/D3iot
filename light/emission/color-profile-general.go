@@ -9,7 +9,7 @@ import (
 	"fmt"
 )
 
-// ModuleProfileGeneral is a general implementation of a ModuleProfile.
+// ColorProfileGeneral is a general implementation of a ColorProfile.
 // It supports:
 //
 //	- Up to 3 primary colored emitters.
@@ -18,7 +18,7 @@ import (
 //	- Custom output limiter functions.
 //
 // You need to call the Init() or MustInit() method before this profile can be used.
-type ModuleProfileGeneral struct {
+type ColorProfileGeneral struct {
 	// WhitePointColor is the brightest color that the module can output.
 	// Usually it's the combination of all white emitters.
 	// Or of all primary emitters, if there are no white ones, or if the whites are are less bright.
@@ -46,11 +46,11 @@ type ModuleProfileGeneral struct {
 	TransferFunc TransferFunction
 }
 
-// Check if it implements ModuleProfile.
-var _ ModuleProfile = &ModuleProfileGeneral{}
+// Check if it implements ColorProfile.
+var _ ColorProfile = &ColorProfileGeneral{}
 
 // Init precalculates some values.
-func (e *ModuleProfileGeneral) Init() error {
+func (e *ColorProfileGeneral) Init() error {
 	var err error
 
 	if e.invPrimaryColors, err = e.PrimaryColors.Inverted(); err != nil {
@@ -66,7 +66,7 @@ func (e *ModuleProfileGeneral) Init() error {
 
 // MustInit is the same as Init(), but panics on any error.
 // As a small help, this returns the module itself.
-func (e *ModuleProfileGeneral) MustInit() *ModuleProfileGeneral {
+func (e *ColorProfileGeneral) MustInit() *ColorProfileGeneral {
 	if err := e.Init(); err != nil {
 		panic(fmt.Sprintf("Failed to init module profile %v: %v", e, err))
 	}
@@ -75,13 +75,13 @@ func (e *ModuleProfileGeneral) MustInit() *ModuleProfileGeneral {
 }
 
 // Channels returns the dimensionality of the device color space.
-func (e *ModuleProfileGeneral) Channels() int {
+func (e *ColorProfileGeneral) Channels() int {
 	return len(e.PrimaryColors) + len(e.WhiteColors)
 }
 
 // WhitePoint returns the white point as a CIE 1931 XYZ color.
 // This is also the brightest color a module can output.
-func (e *ModuleProfileGeneral) WhitePoint() CIE1931XYZAbs {
+func (e *ColorProfileGeneral) WhitePoint() CIE1931XYZAbs {
 	return e.WhitePointColor
 }
 
@@ -92,12 +92,12 @@ func (e *ModuleProfileGeneral) WhitePoint() CIE1931XYZAbs {
 //	- RGB emitters.
 //	- RGB + white emitters.
 //	- RGB + cold white + warm white emitters.
-func (e *ModuleProfileGeneral) ChannelPoints() []CIE1931XYZAbs {
+func (e *ColorProfileGeneral) ChannelPoints() []CIE1931XYZAbs {
 	return e.FullTransformation()
 }
 
 // FullTransformation returns a transformation (matrix) that contains all channels (A list of all colors).
-func (e *ModuleProfileGeneral) FullTransformation() TransformationLinDCSToXYZ {
+func (e *ColorProfileGeneral) FullTransformation() TransformationLinDCSToXYZ {
 	result := make(TransformationLinDCSToXYZ, 0, e.Channels())
 	return append(append(result, e.PrimaryColors...), e.WhiteColors...)
 }
@@ -105,7 +105,7 @@ func (e *ModuleProfileGeneral) FullTransformation() TransformationLinDCSToXYZ {
 // XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 //
 // Short: XYZ --> device color space.
-func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZAbs) DCSVector {
+func (e *ColorProfileGeneral) XYZToDCS(color CIE1931XYZAbs) DCSVector {
 	// Determine the DCS values of the primary channels.
 	primaryV := e.invPrimaryColors.Multiplied(color)
 
@@ -153,7 +153,7 @@ func (e *ModuleProfileGeneral) XYZToDCS(color CIE1931XYZAbs) DCSVector {
 // DCSToXYZ takes a vector from the device color space and returns the color it represents.
 //
 // Short: Device color space --> XYZ.
-func (e *ModuleProfileGeneral) DCSToXYZ(v DCSVector) (CIE1931XYZAbs, error) {
+func (e *ColorProfileGeneral) DCSToXYZ(v DCSVector) (CIE1931XYZAbs, error) {
 	if v.Channels() != e.Channels() {
 		return CIE1931XYZAbs{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
 	}
@@ -178,6 +178,6 @@ func (e *ModuleProfileGeneral) DCSToXYZ(v DCSVector) (CIE1931XYZAbs, error) {
 	return result, nil
 }
 
-func (e *ModuleProfileGeneral) TransferFunction() TransferFunction {
+func (e *ColorProfileGeneral) TransferFunction() TransferFunction {
 	return e.TransferFunc
 }

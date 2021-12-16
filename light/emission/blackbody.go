@@ -20,12 +20,12 @@ type BlackBodyFixed struct {
 var _ ValueIntoDCS = &BlackBodyFixed{} // TODO: Implement transformation from DCS
 
 // IntoDCS implements the Value interface.
-func (b BlackBodyFixed) IntoDCS(mp ModuleProfile) DCSVector {
-	return mp.XYZToDCS(b.CIE1931XYZAbs())
+func (b BlackBodyFixed) IntoDCS(cp ColorProfile) DCSVector {
+	return cp.XYZToDCS(b.CIE1931XYZAbs())
 }
 
 // FromDCS implements the Value interface.
-/*func (b *BlackBodyFixed) FromDCS(mp ModuleProfile, v DCSVector) error {
+/*func (b *BlackBodyFixed) FromDCS(cp ColorProfile, v DCSVector) error {
 	// Calculate CCT.
 	return fmt.Errorf("conversion from DCS to %T not implemented yet", b)
 }*/
@@ -75,8 +75,8 @@ type BlackBodyArea struct {
 var _ ValueIntoDCS = &BlackBodyArea{} // TODO: Implement transformation from DCS
 
 // IntoDCS implements the Value interface.
-func (b BlackBodyArea) IntoDCS(mp ModuleProfile) DCSVector {
-	return mp.XYZToDCS(b.CIE1931XYZAbs())
+func (b BlackBodyArea) IntoDCS(cp ColorProfile) DCSVector {
+	return cp.XYZToDCS(b.CIE1931XYZAbs())
 }
 
 func (b BlackBodyArea) CIE1931XYZAbs() CIE1931XYZAbs {

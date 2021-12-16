@@ -104,10 +104,10 @@ func (l *Light) SetColors(emissionValues ...emission.ValueIntoDCS) error {
 		return l.SetPilot(pilot)
 
 	case 1:
-		moduleProfile := l.ModuleProfiles()[0]
+		colorProfile := l.ColorProfiles()[0]
 
 		// Transform emission value into DCS.
-		vector := emissionValues[0].IntoDCS(moduleProfile)
+		vector := emissionValues[0].IntoDCS(colorProfile)
 
 		switch dc := l.product.deviceClass; dc {
 		case deviceClassDW:
@@ -194,8 +194,8 @@ func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
 
 	}
 
-	moduleProfile := l.ModuleProfiles()[0]
-	return emissionValues[0].FromDCS(moduleProfile, vector)
+	colorProfile := l.ColorProfiles()[0]
+	return emissionValues[0].FromDCS(colorProfile, vector)
 }
 
 // Modules returns the amount of modules.
@@ -204,9 +204,8 @@ func (l *Light) Modules() int {
 	return 1 // Most (or all?) WiZ lights have one module.
 }
 
-// ModuleProfiles returns the profiles that describe the modules of a device.
-// The length of the resulting list is equal to the number of modules for this device.
-// This must always returns as much elements as the device has modules.
-func (l *Light) ModuleProfiles() []emission.ModuleProfile {
-	return []emission.ModuleProfile{l.Product().moduleProfile}
+// ColorProfiles returns the color profiles of every module in this device.
+// The length of the resulting list must always be equal to the number of modules for this device.
+func (l *Light) ColorProfiles() []emission.ColorProfile {
+	return []emission.ColorProfile{l.Product().colorProfile}
 }

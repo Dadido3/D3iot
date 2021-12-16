@@ -26,7 +26,7 @@ type Product struct {
 	// Describes the set of light emitting things that together generate a single color impression.
 	// This is responsible for color transformations.
 	// This must not be nil!
-	moduleProfile emission.ModuleProfile
+	colorProfile emission.ColorProfile
 
 	// The valid color temperatures are described by the interval [MinTemp, MaxTemp].
 	// This doesn't necessarily correspond with the range that the white LEDs can output.

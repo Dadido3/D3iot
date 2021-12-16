@@ -19,14 +19,14 @@ type CIE1931XYZAbs struct {
 var _ Value = &CIE1931XYZAbs{}
 
 // IntoDCS implements the Value interface.
-func (c CIE1931XYZAbs) IntoDCS(mp ModuleProfile) DCSVector {
-	return mp.XYZToDCS(c)
+func (c CIE1931XYZAbs) IntoDCS(cp ColorProfile) DCSVector {
+	return cp.XYZToDCS(c)
 }
 
 // FromDCS implements the Value interface.
-func (c *CIE1931XYZAbs) FromDCS(mp ModuleProfile, v DCSVector) error {
+func (c *CIE1931XYZAbs) FromDCS(cp ColorProfile, v DCSVector) error {
 	var err error
-	if *c, err = mp.DCSToXYZ(v); err != nil {
+	if *c, err = cp.DCSToXYZ(v); err != nil {
 		return fmt.Errorf("failed to convert from DCS to %T: %w", c, err)
 	}
 	return nil
@@ -75,19 +75,19 @@ type CIE1931XYZRel struct {
 var _ Value = &CIE1931XYZRel{}
 
 // IntoDCS implements the Value interface.
-func (c CIE1931XYZRel) IntoDCS(mp ModuleProfile) DCSVector {
-	maxLuminance := mp.WhitePoint().Y
-	return c.Absolute(maxLuminance).IntoDCS(mp)
+func (c CIE1931XYZRel) IntoDCS(cp ColorProfile) DCSVector {
+	maxLuminance := cp.WhitePoint().Y
+	return c.Absolute(maxLuminance).IntoDCS(cp)
 }
 
 // FromDCS implements the Value interface.
-func (c *CIE1931XYZRel) FromDCS(mp ModuleProfile, v DCSVector) error {
+func (c *CIE1931XYZRel) FromDCS(cp ColorProfile, v DCSVector) error {
 	var res CIE1931XYZAbs
-	if err := res.FromDCS(mp, v); err != nil {
+	if err := res.FromDCS(cp, v); err != nil {
 		return err
 	}
 
-	maxLuminance := mp.WhitePoint().Y
+	maxLuminance := cp.WhitePoint().Y
 	*c = res.Relative(maxLuminance)
 	return nil
 }
@@ -115,13 +115,13 @@ type CIE1931xyYAbs struct {
 var _ Value = &CIE1931xyYAbs{}
 
 // IntoDCS implements the Value interface.
-func (c CIE1931xyYAbs) IntoDCS(mp ModuleProfile) DCSVector {
-	return mp.XYZToDCS(c.CIE1931XYZAbs())
+func (c CIE1931xyYAbs) IntoDCS(cp ColorProfile) DCSVector {
+	return cp.XYZToDCS(c.CIE1931XYZAbs())
 }
 
 // FromDCS implements the Value interface.
-func (c *CIE1931xyYAbs) FromDCS(mp ModuleProfile, v DCSVector) error {
-	if xyzColor, err := mp.DCSToXYZ(v); err != nil {
+func (c *CIE1931xyYAbs) FromDCS(cp ColorProfile, v DCSVector) error {
+	if xyzColor, err := cp.DCSToXYZ(v); err != nil {
 		return fmt.Errorf("failed to convert from DCS to %T: %w", c, err)
 	} else {
 		sum := xyzColor.X + xyzColor.Y + xyzColor.Z
@@ -167,19 +167,19 @@ type CIE1931xyYRel struct {
 var _ Value = &CIE1931xyYRel{}
 
 // IntoDCS implements the Value interface.
-func (c CIE1931xyYRel) IntoDCS(mp ModuleProfile) DCSVector {
-	maxLuminance := mp.WhitePoint().Y
-	return c.Absolute(maxLuminance).IntoDCS(mp)
+func (c CIE1931xyYRel) IntoDCS(cp ColorProfile) DCSVector {
+	maxLuminance := cp.WhitePoint().Y
+	return c.Absolute(maxLuminance).IntoDCS(cp)
 }
 
 // FromDCS implements the Value interface.
-func (c *CIE1931xyYRel) FromDCS(mp ModuleProfile, v DCSVector) error {
+func (c *CIE1931xyYRel) FromDCS(cp ColorProfile, v DCSVector) error {
 	var res CIE1931xyYAbs
-	if err := res.FromDCS(mp, v); err != nil {
+	if err := res.FromDCS(cp, v); err != nil {
 		return err
 	}
 
-	maxLuminance := mp.WhitePoint().Y
+	maxLuminance := cp.WhitePoint().Y
 	*c = res.Relative(maxLuminance)
 	return nil
 }

@@ -13,7 +13,7 @@ var products = []Product{
 	{ // Tested: Yes, Profiled: Yes.
 		moduleName:  "ESP03_SHRGB1W_01",
 		deviceClass: deviceClassRGBTW,
-		moduleProfile: (&emission.ModuleProfileGeneral{
+		colorProfile: (&emission.ColorProfileGeneral{
 			WhitePointColor: emission.CIE1931XYZAbs{X: 0.4453145432034966, Y: 0.4936881395023207, Z: 0.42839706385865284}.
 				Sum(emission.CIE1931XYZAbs{X: 0.5750302833988727, Y: 0.5063118604976793, Z: 0.16587493725962105}).Scaled(1521), // Scale by lumen.
 			PrimaryColors: emission.TransformationLinDCSToXYZ{
@@ -33,7 +33,7 @@ var products = []Product{
 	{ // Tested: No, Profiled: No.
 		moduleName:  "ESP01_SHDW_01",
 		deviceClass: deviceClassDW,
-		moduleProfile: (&emission.ModuleProfileGeneral{
+		colorProfile: (&emission.ColorProfileGeneral{
 			WhitePointColor: emission.CIE1931XYZAbs{X: 0.5750302833988727, Y: 0.5063118604976793, Z: 0.16587493725962105}.Scaled(810),               // Scale by lumen.
 			WhiteColors:     emission.TransformationLinDCSToXYZ{{X: 0.5750302833988727, Y: 0.5063118604976793, Z: 0.16587493725962105}}.Scaled(810), // Scale by lumen.
 			OutputLimiter:   emission.OutputLimiterSum{Limit: 1},
@@ -43,7 +43,7 @@ var products = []Product{
 	{ // Tested: No, Profiled: No.
 		moduleName:  "ESP56_SHTW3_01",
 		deviceClass: deviceClassTW,
-		moduleProfile: (&emission.ModuleProfileGeneral{
+		colorProfile: (&emission.ColorProfileGeneral{
 			WhitePointColor: emission.CIE1931XYZAbs{X: 0.4453145432034966, Y: 0.4936881395023207, Z: 0.42839706385865284}.
 				Sum(emission.CIE1931XYZAbs{X: 0.5750302833988727, Y: 0.5063118604976793, Z: 0.16587493725962105}).Scaled(720), // Scale by lumen.
 			WhiteColors: emission.TransformationLinDCSToXYZ{

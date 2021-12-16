@@ -20,13 +20,15 @@ A light device contains modules.
 These are single units that contain one or multiple different types of light emitting things (LEDs, ...).
 Each module is responsible for a single color impression, and each module can be controlled independently.
 
-Most devices just contain one module (Normal light bulbs, ...).
+Most devices just contain one module (E.g. RGB light bulbs, ...).
 You can use `light.Modules()` to get the number of modules.
 
-For more details about each module you can use `light.ModuleProfiles()`.
+To get information about a module's color space and abilities, use `light.ColorProfiles()`.
 
 ``` go
-profile := light.ModuleProfiles()[0] // There is always at least one module!
+// Get the color profiles of all modules.
+// There is always at least one module!
+profile := light.ColorProfiles()[0]
 
 whitePoint := profile.WhitePointColor()
 halfWhitePoint := whitePoint.Scaled(0.5)

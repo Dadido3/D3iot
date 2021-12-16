@@ -63,12 +63,12 @@ type StandardIlluminantDSeries struct {
 var _ ValueIntoDCS = &StandardIlluminantDSeries{} // TODO: Implement transformation from DCS
 
 // IntoDCS implements the Value interface.
-func (si StandardIlluminantDSeries) IntoDCS(mp ModuleProfile) DCSVector {
-	return mp.XYZToDCS(si.CIE1931XYZAbs())
+func (si StandardIlluminantDSeries) IntoDCS(cp ColorProfile) DCSVector {
+	return cp.XYZToDCS(si.CIE1931XYZAbs())
 }
 
 // FromDCS implements the Value interface.
-/*func (si *StandardIlluminantDSeries) FromDCS(mp ModuleProfile, v DCSVector) error {
+/*func (si *StandardIlluminantDSeries) FromDCS(cp ColorProfile, v DCSVector) error {
 	// Calculate CCT.
 	return fmt.Errorf("conversion from DCS to %T not implemented yet", si)
 }*/

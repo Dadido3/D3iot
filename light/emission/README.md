@@ -15,7 +15,7 @@ The Y coordinate represents an absolute luminance with its unit being lumen, ins
 
 - XYZ to DCS transformation.
 - DCS to XYZ transformation.
-- Supports lights/modules with up to 6 differently emitters of different color (Up to 3 primaries like RGB, and up to 3 higher CRI "white" LEDs).
+- Supports devices/modules with up to 6 emitters of different color (Up to 3 primaries like RGB, and up to 3 higher CRI "white" LEDs).
 - Optimizes automatically for high CRI and high luminance output, if the device supports that (RGBW or RGBCW).
 
 ## Usage
@@ -33,34 +33,35 @@ dcsVector := DCSVector{0.5,0.5,0.5,0.5,0.5}
 - `xyzColor` describes some color with a luminance of 1600 lumen.
 - `dcsVector` describes a vector/color in the device color space.
 
-### Module profiles
+### Color profiles
 
-Setting up a profile for a module that can be used to transform color spaces is simple.
+Setting up a color profile for a module is simple.
+The library comes with a general implementation of its ColorProfile interface that supports most lamps:
 
 ``` go
-moduleProfile := &ModuleProfileGeneral{
+colorProfile := &ColorProfileGeneral{
     WhitePointColor:  CIE1931XYZAbs{}.Sum(standardRGBRed, standardRGBGreen, standardRGBBlue),
     PrimaryColors:    TransformationLinDCSToXYZ{standardRGBRed, standardRGBGreen, standardRGBBlue},
     WhiteColors:      TransformationLinDCSToXYZ{CIE1931XYZAbs{30, 30, 30}},
     OutputLimiter:    OutputLimiterSum{3},
     TransferFunction: TransferFunctionStandardRGB,
 }
-moduleProfile.MustInit() // Precalculate some internal values.
+colorProfile.MustInit() // Precalculate some internal values.
 ```
 
-- `WhitePointColor` is the brightest color that module can output. It's just a CIE 1931 XYZ color.
-- `PrimaryColors` contains a list of colors that span the color gamut of the module.
-- `WhiteColors` contains all white or high CRI emitters of this module.
+- `WhitePointColor` is the brightest color that module can output. It's just an absolute CIE 1931 XYZ color, with its luminance being in lumen.
+- `PrimaryColors` contains a list of colors that span the color gamut of the module. Also in absolute luminance.
+- `WhiteColors` contains all white or high CRI emitters of this module. Also in absolute luminance.
 - `OutputLimiter` is a type that implements some method to limit the output channels in some way.
 - `TransferFunction` is a type that implements the transformation between linear and non linear space.
 
 ### Transforming colors
 
-`moduleProfile` can then be used to transform between color spaces.
+`colorProfile` can then be used to transform between color spaces.
 
 ``` go
-xyzColor, err := moduleProfile.DCSToXYZ(dcsVector)
-dcsVector := moduleProfile.XYZToDCS(xyzColor)
+xyzColor, err := colorProfile.DCSToXYZ(dcsVector)
+dcsVector := colorProfile.XYZToDCS(xyzColor)
 ```
 
 ### Value interface

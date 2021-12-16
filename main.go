@@ -90,12 +90,12 @@ func main() {
 		log.Printf("light.SetPilot() failed: %v", err)
 	}*/
 
-	//moduleProfile := light.ModuleProfiles()[0]
+	colorProfile := light.ColorProfiles()[0]
 
 	//emissionValue := emission.CIE1931XYZRel{X: 0.95047, Y: 1, Z: 1.08883}
-	//emissionValue := moduleProfile.WhitePoint().Scaled(0.13)
+	emissionValue := colorProfile.WhitePoint().Scaled(0.13)
 	//emissionValue := emission.StandardIlluminantA.Absolute(200)
-	emissionValue := emission.BlackBodyArea{Temperature: 2000, Area: 0.1}
+	//emissionValue := emission.BlackBodyArea{Temperature: 2000, Area: 0.1}
 
 	if err := light.SetColors(emissionValue); err != nil {
 		log.Printf("light.SetColors() failed: %v", err)

@@ -10,6 +10,9 @@ import "github.com/Dadido3/D3iot/light/emission"
 // Light is the common interface for all light devices.
 // It defines the basic methods to set or get colors, and query the device for its abilities.
 //
+// A light device contains a number of modules, but at least 1.
+// A module is a set of light emitting things that together create a single color impression.
+//
 // If you need more control over the device, you can use a type assertion to get an implementation of the Light interface.
 type Light interface {
 	// SetColors sets the emission values of all the modules in the light device.
@@ -25,8 +28,7 @@ type Light interface {
 	// All devices have at least one module, but most devices have just one.
 	Modules() int
 
-	// ModuleProfiles returns the profiles that describe the modules of a device.
-	// The length of the resulting list is equal to the number of modules for this device.
-	// This always returns as much elements as the device as modules.
-	ModuleProfiles() []emission.ModuleProfile
+	// ColorProfiles returns the color profiles of every module in this device.
+	// The length of the resulting list is always equal to the number of modules for this device.
+	ColorProfiles() []emission.ColorProfile
 }

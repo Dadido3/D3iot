@@ -29,12 +29,12 @@ func (v DCSVector) Copy() DCSVector {
 }
 
 // IntoDCS implements the Value interface.
-func (v DCSVector) IntoDCS(mp ModuleProfile) DCSVector {
+func (v DCSVector) IntoDCS(cp ColorProfile) DCSVector {
 	return v
 }
 
 // FromDCS implements the Value interface.
-func (v *DCSVector) FromDCS(mp ModuleProfile, v2 DCSVector) error {
+func (v *DCSVector) FromDCS(cp ColorProfile, v2 DCSVector) error {
 	*v = v2.Copy()
 	return nil
 }
@@ -112,13 +112,13 @@ func (v LinDCSVector) Copy() LinDCSVector {
 }
 
 // IntoDCS implements the Value interface.
-func (v LinDCSVector) IntoDCS(mp ModuleProfile) DCSVector {
-	return v.ClampedAndDeLinearized(mp.TransferFunction())
+func (v LinDCSVector) IntoDCS(cp ColorProfile) DCSVector {
+	return v.ClampedAndDeLinearized(cp.TransferFunction())
 }
 
 // FromDCS implements the Value interface.
-func (v *LinDCSVector) FromDCS(mp ModuleProfile, v2 DCSVector) error {
-	*v = v2.ClampedAndLinearized(mp.TransferFunction())
+func (v *LinDCSVector) FromDCS(cp ColorProfile, v2 DCSVector) error {
+	*v = v2.ClampedAndLinearized(cp.TransferFunction())
 	return nil
 }
 
