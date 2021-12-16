@@ -12,7 +12,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Dadido3/D3iot/light/wiz"
+	"github.com/Dadido3/D3iot/light/drivers/wiz"
 )
 
 var flagDeviceAddress = flag.String("address", "", "The address of the device to be controlled. Example: \"--address wiz-123abc:38899\" or \"--address 192.168.1.123:38899\"")

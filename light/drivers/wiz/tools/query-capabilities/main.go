@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Dadido3/D3iot/light/wiz"
+	"github.com/Dadido3/D3iot/light/drivers/wiz"
 )
 
 // Result contains all important data of the query.

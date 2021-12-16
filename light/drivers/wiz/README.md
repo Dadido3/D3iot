@@ -21,7 +21,7 @@ go get github.com/Dadido3/D3iot
 and import
 
 ``` go
-import "github.com/Dadido3/D3iot/light/wiz"
+import "github.com/Dadido3/D3iot/light/drivers/wiz"
 ```
 
 ### Connecting
