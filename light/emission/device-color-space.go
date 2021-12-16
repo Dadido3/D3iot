@@ -21,7 +21,7 @@ type DCSVector []float64
 
 var _ Value = &DCSVector{}
 
-// Copy returns a copy of c.
+// Copy returns a copy of v.
 func (v DCSVector) Copy() DCSVector {
 	vCopy := make(DCSVector, v.Channels())
 	copy(vCopy, v)
@@ -104,7 +104,7 @@ type LinDCSVector []float64
 
 var _ Value = &LinDCSVector{}
 
-// Copy returns a copy of c.
+// Copy returns a copy of v.
 func (v LinDCSVector) Copy() LinDCSVector {
 	vCopy := make(LinDCSVector, v.Channels())
 	copy(vCopy, v)
@@ -137,6 +137,20 @@ func (v LinDCSVector) ClampedIndividually() LinDCSVector {
 		result = append(result, clamp01(channel))
 	}
 	return result
+}
+
+// ClampedUniform returns all channel scaled by a single scaling factor in a way so that every channel is below or equal to one.
+//
+//	LinDCSVector{1.1, 0.9, -0.1} --> LinDCSVector{1.0, 0.818, -0.091}
+func (v LinDCSVector) ClampedUniform() LinDCSVector {
+	scale := 1.0
+	for _, channel := range v {
+		neededScale := 1.0 / channel
+		if channel > 0 && scale > neededScale {
+			scale = neededScale
+		}
+	}
+	return v.Scaled(scale)
 }
 
 // ClampedToPositive returns all channels individually clamped into the range [0, +inf].
@@ -217,7 +231,7 @@ func (v LinDCSVector) Scaled(s float64) LinDCSVector {
 }
 
 // ScaledToPositiveDifference returns the largest scaling factor s in a way so that v - v2*s doesn't result in any negative channel values.
-// The result is clamped to [0, 1]
+// The result is clamped to [0, 1].
 // TODO: Find better name, there must be some mathematical concept that describes this
 func (v LinDCSVector) ScaledToPositiveDifference(v2 LinDCSVector) (float64, error) {
 	if v.Channels() != v2.Channels() {

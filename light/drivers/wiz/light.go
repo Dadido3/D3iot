@@ -112,21 +112,24 @@ func (l *Light) SetColors(emissionValues ...emission.ValueIntoDCS) error {
 		switch dc := l.product.deviceClass; dc {
 		case deviceClassDW:
 			if vector.Channels() == 1 {
-				return l.SetPilot(NewPilot(true).WithScene(SceneCoolWhite, 100).WithDimming(uint(vector[0] * 100)))
+				dimming := uint(normFloatToInt(vector[0], 100))
+				return l.SetPilot(NewPilot(true).WithScene(SceneCoolWhite, 100).WithDimming(dimming))
 			} else {
 				return fmt.Errorf("unexpected number of channels. Got %d, want %d", vector.Channels(), 1)
 			}
 
 		case deviceClassTW:
 			if vector.Channels() == 2 {
-				return l.SetPilot(NewPilotWithWhite(100, uint8(vector[0]*255), uint8(vector[1]*255)))
+				cw, ww := normFloatToUint8(vector[0]), normFloatToUint8(vector[1])
+				return l.SetPilot(NewPilotWithWhite(100, cw, ww))
 			} else {
 				return fmt.Errorf("unexpected number of channels. Got %d, want %d", vector.Channels(), 2)
 			}
 
 		case deviceClassRGBTW:
 			if vector.Channels() == 5 {
-				return l.SetPilot(NewPilotWithRGBW(100, uint8(vector[0]*255), uint8(vector[1]*255), uint8(vector[2]*255), uint8(vector[3]*255), uint8(vector[4]*255)))
+				r, g, b, cw, ww := normFloatToUint8(vector[0]), normFloatToUint8(vector[1]), normFloatToUint8(vector[2]), normFloatToUint8(vector[3]), normFloatToUint8(vector[4])
+				return l.SetPilot(NewPilotWithRGBW(100, r, g, b, cw, ww))
 			} else {
 				return fmt.Errorf("unexpected number of channels. Got %d, want %d", vector.Channels(), 5)
 			}
@@ -170,7 +173,7 @@ func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
 	switch dc := l.product.deviceClass; dc {
 	case deviceClassDW:
 		if pilot.State && pilot.HasDimming() {
-			vector = emission.DCSVector{float64(*pilot.Dimming) / 100} // TODO: Use a better rounding method
+			vector = emission.DCSVector{float64(*pilot.Dimming) / 100}
 		} else {
 			vector = emission.DCSVector{0}
 		}

@@ -144,6 +144,9 @@ func (e *ColorProfileGeneral) XYZToDCS(color CIE1931XYZAbs) DCSVector {
 		linV = e.OutputLimiter.LimitDCS(linV)
 	}
 
+	// Prevent any channel from clipping in a way that doesn't change the color.
+	linV = linV.ClampedUniform()
+
 	// Clamp values, apply transfer function.
 	nonLinV := linV.ClampedAndDeLinearized(e.TransferFunc)
 
