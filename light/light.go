@@ -24,7 +24,7 @@ type Light interface {
 	// This will return an error if you try to get more values than there are modules in a light device.
 	GetColors(emissionValues ...emission.ValueFromDCS) error
 
-	// Modules returns the amount of modules.
+	// Modules returns the number of modules.
 	// All devices have at least one module, but most devices have just one.
 	Modules() int
 

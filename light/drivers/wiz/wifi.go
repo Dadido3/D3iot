@@ -49,7 +49,7 @@ type UserConfig struct {
 	OpMode     int  `json:"opMode"`     // No idea.
 	PO         bool `json:"po"`         // No idea.
 	MinDimming uint `json:"minDimming"` // Minimal dimming value in percent.
-	TapSensor  int  `json:"tapSensor"`  // Not sure. Amount of tap sensors?
+	TapSensor  int  `json:"tapSensor"`  // Not sure. Number of tap sensors?
 }
 
 // method represents a query method.

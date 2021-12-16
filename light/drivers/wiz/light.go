@@ -198,7 +198,7 @@ func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
 	return emissionValues[0].FromDCS(colorProfile, vector)
 }
 
-// Modules returns the amount of modules.
+// Modules returns the number of modules.
 // All devices must at least have one module.
 func (l *Light) Modules() int {
 	return 1 // Most (or all?) WiZ lights have one module.

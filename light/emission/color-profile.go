@@ -26,7 +26,7 @@ type ColorProfile interface {
 	//	- RGB emitters.
 	//	- RGB + white emitters.
 	//	- RGB + cold white + warm white emitters.
-	ChannelPoints() []CIE1931XYZAbs // TODO: Find better name, you don't get channel points for watching your light bulb glow
+	ChannelPoints() []CIE1931XYZAbs
 
 	// XYZToDCS takes a color and returns a vector in the device color space that reproduces the given color as closely as possible.
 	//

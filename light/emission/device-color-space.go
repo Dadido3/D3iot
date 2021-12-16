@@ -39,7 +39,7 @@ func (v *DCSVector) FromDCS(cp ColorProfile, v2 DCSVector) error {
 	return nil
 }
 
-// Channels returns the amount of channels.
+// Channels returns the number of channels.
 // This is the dimensionality of the DCS.
 func (v DCSVector) Channels() int {
 	return len(v)
@@ -72,7 +72,7 @@ func (v DCSVector) ClampedAndLinearized(tf TransferFunction) LinDCSVector {
 // This may or may not make sense to use, as this is not a linear space.
 func (v DCSVector) Difference(v2 DCSVector) (DCSVector, error) {
 	if v.Channels() != v2.Channels() {
-		return nil, fmt.Errorf("mismatching amount of channels %d and %d", v.Channels(), v2.Channels())
+		return nil, fmt.Errorf("mismatching number of channels %d and %d", v.Channels(), v2.Channels())
 	}
 
 	result := v.Copy()
@@ -122,7 +122,7 @@ func (v *LinDCSVector) FromDCS(cp ColorProfile, v2 DCSVector) error {
 	return nil
 }
 
-// Channels returns the amount of channels.
+// Channels returns the number of channels.
 // This is the dimensionality of the DCS.
 func (v LinDCSVector) Channels() int {
 	return len(v)
@@ -181,7 +181,7 @@ func (v LinDCSVector) Sum(vectors ...LinDCSVector) (LinDCSVector, error) {
 
 	for _, vector := range vectors {
 		if v.Channels() != vector.Channels() {
-			return nil, fmt.Errorf("mismatching amount of channels %d and %d", v.Channels(), vector.Channels())
+			return nil, fmt.Errorf("mismatching number of channels %d and %d", v.Channels(), vector.Channels())
 		}
 		for i, channel := range vector {
 			result[i] += channel
@@ -196,7 +196,7 @@ func (v LinDCSVector) Sum(vectors ...LinDCSVector) (LinDCSVector, error) {
 // This may or may not make sense to use, as this is not a linear space.
 func (v LinDCSVector) Difference(v2 LinDCSVector) (LinDCSVector, error) {
 	if v.Channels() != v2.Channels() {
-		return nil, fmt.Errorf("mismatching amount of channels %d and %d", v.Channels(), v2.Channels())
+		return nil, fmt.Errorf("mismatching number of channels %d and %d", v.Channels(), v2.Channels())
 	}
 
 	result := make(LinDCSVector, 0, v.Channels())
@@ -216,12 +216,12 @@ func (v LinDCSVector) Scaled(s float64) LinDCSVector {
 	return result
 }
 
-// ScaledToPositiveDifference returns a scaling factor s in a way so that v - v2*s doesn't result in any negative channel values.
+// ScaledToPositiveDifference returns the largest scaling factor s in a way so that v - v2*s doesn't result in any negative channel values.
 // The result is clamped to [0, 1]
 // TODO: Find better name, there must be some mathematical concept that describes this
 func (v LinDCSVector) ScaledToPositiveDifference(v2 LinDCSVector) (float64, error) {
 	if v.Channels() != v2.Channels() {
-		return 0, fmt.Errorf("mismatching amount of channels %d and %d", v.Channels(), v2.Channels())
+		return 0, fmt.Errorf("mismatching number of channels %d and %d", v.Channels(), v2.Channels())
 	}
 
 	sMin := 1.0

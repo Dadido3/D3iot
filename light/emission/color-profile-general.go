@@ -155,7 +155,7 @@ func (e *ColorProfileGeneral) XYZToDCS(color CIE1931XYZAbs) DCSVector {
 // Short: Device color space --> XYZ.
 func (e *ColorProfileGeneral) DCSToXYZ(v DCSVector) (CIE1931XYZAbs, error) {
 	if v.Channels() != e.Channels() {
-		return CIE1931XYZAbs{}, fmt.Errorf("unexpected amount of channels. Got %d, want %d", v.Channels(), e.Channels())
+		return CIE1931XYZAbs{}, fmt.Errorf("unexpected number of channels. Got %d, want %d", v.Channels(), e.Channels())
 	}
 
 	linV := v.ClampedAndLinearized(e.TransferFunc)
