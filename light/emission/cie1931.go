@@ -7,6 +7,7 @@ package emission
 
 import (
 	"fmt"
+	"math"
 )
 
 // CIE1931xyYAbs represents a color in the CIE 1931 XYZ color space with an absolute luminance in lumen.
@@ -37,6 +38,17 @@ func (c *CIE1931XYZAbs) FromDCS(cp ColorProfile, v DCSVector) error {
 // maxLuminance defines the highest possible luminance in lumen.
 func (c CIE1931XYZAbs) Relative(maxLuminance float64) CIE1931XYZRel {
 	return CIE1931XYZRel{c.X / maxLuminance, c.Y / maxLuminance, c.Z / maxLuminance}
+}
+
+// CIE1931xyYAbs returns the color in the CIE 1931 xyY color space with an absolute luminance in lumen.
+func (c CIE1931XYZAbs) CIE1931xyYAbs() CIE1931xyYAbs {
+	sum := c.X + c.Y + c.Z
+
+	return CIE1931xyYAbs{
+		X:          c.X / sum,
+		Y:          c.Y / sum,
+		LuminanceY: c.Y,
+	}
 }
 
 // Sum returns the sum of c and all colors.
@@ -99,9 +111,65 @@ func (c CIE1931XYZRel) Absolute(maxLuminance float64) CIE1931XYZAbs {
 	return CIE1931XYZAbs{c.X * maxLuminance, c.Y * maxLuminance, c.Z * maxLuminance}
 }
 
+// CIE1931xyYRel returns the color in the CIE 1931 xyY color space with a relative luminance.
+func (c CIE1931XYZRel) CIE1931xyYRel() CIE1931xyYRel {
+	sum := c.X + c.Y + c.Z
+
+	return CIE1931xyYRel{
+		X:          c.X / sum,
+		Y:          c.Y / sum,
+		LuminanceY: c.Y,
+	}
+}
+
 // Scaled returns c scaled by the scalar s.
 func (c CIE1931XYZRel) Scaled(s float64) CIE1931XYZRel {
 	return CIE1931XYZRel{c.X * s, c.Y * s, c.Z * s}
+}
+
+// Distance returns the euclidean distance between c and c2.
+//
+// This distance doesn't represent perceptual difference of two colors.
+// See the method CIE1976LABDistance() for a better metric.
+func (c CIE1931XYZRel) Distance(c2 CIE1931XYZRel) float64 {
+	xDiff := c.X - c2.X
+	yDiff := c.Y - c2.Y
+	zDiff := c.Z - c2.Z
+
+	return math.Sqrt(xDiff*xDiff + yDiff*yDiff + zDiff*zDiff)
+}
+
+// CIE1976LABDistance returns the euclidean distance between c and c2 in the CIE 1976 L*a*b* color space.
+// This is a good measure for perceptual difference of two colors.
+//
+// The distance is officially called ΔE*ab (with ab being in subscript) or just ΔE*.
+// A value of about 2.3 is just noticeable.
+func (c CIE1931XYZRel) CIE1976LABDistance(c2 CIE1931XYZRel, whitePoint CIE1931XYZRel) float64 {
+	cLAB := c.CIE1976LAB(whitePoint)
+	c2LAB := c2.CIE1976LAB(whitePoint)
+
+	return cLAB.Distance(c2LAB)
+}
+
+// CIE1976LAB returns the color transformed into the CIE 1976 L*a*b* color space with the given white point.
+func (c CIE1931XYZRel) CIE1976LAB(whitePoint CIE1931XYZRel) CIE1976LAB {
+	// Using the intent of the CIE standard, not the numbers published by the CIE. See http://www.brucelindbloom.com/LContinuity.html.
+	const delta = 6.0 / 29
+
+	f := func(t float64) float64 {
+		if t > delta*delta*delta {
+			return math.Pow(t, 1.0/3)
+		} else {
+			return t/(3*delta*delta) + 4.0/29
+		}
+	}
+
+	return CIE1976LAB{
+		L:          116*f(c.Y/whitePoint.Y) - 16,
+		A:          500 * (f(c.X/whitePoint.X) - f(c.Y/whitePoint.Y)),
+		B:          200 * (f(c.Y/whitePoint.Y) - f(c.Z/whitePoint.Z)),
+		WhitePoint: whitePoint,
+	}
 }
 
 // CIE1931xyYAbs represents a color in the CIE 1931 xyY color space with an absolute luminance in lumen.
@@ -191,7 +259,7 @@ func (c CIE1931xyYRel) Absolute(maxLuminance float64) CIE1931xyYAbs {
 	return CIE1931xyYAbs{c.X, c.Y, c.LuminanceY * maxLuminance}
 }
 
-// CIE1931XYZAbs returns the color in the CIE 1931 XYZ color space with relative luminance.
+// CIE1931XYZRel returns the color in the CIE 1931 XYZ color space with relative luminance.
 func (c CIE1931xyYRel) CIE1931XYZRel() CIE1931XYZRel {
 	return CIE1931XYZRel{
 		(c.X * c.LuminanceY) / c.Y,

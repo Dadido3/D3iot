@@ -5,7 +5,8 @@ This provides everything needed to transform from CIE 1931 XYZ or other color sp
 The transformation in the opposite direction is supported too.
 
 This library works a bit differently than the usual color management pipelines.
-There is no common media white point like in ICC profiles (Which uses D50 for the profile connection space).
+There is no common media white point like in ICC profiles (Which use D50 for the profile connection space).
+
 If you use the CIE 1931 XYZ color of the standard illuminant D65, the transformed DCS values will make a light bulb produce light that is perceived as that standard illuminant.
 
 Another difference is how the luminance is defined.
@@ -17,6 +18,19 @@ The Y coordinate represents an absolute luminance with its unit being lumen, ins
 - DCS to XYZ transformation.
 - Supports devices/modules with up to 6 emitters of different color (Up to 3 primaries like RGB, and up to 3 higher CRI "white" LEDs).
 - Optimizes automatically for high CRI and high luminance output, if the device supports that (RGBW or RGBCW).
+- Comes with support for the following color spaces:
+  - CIE 1931 XYZ in absolute luminance
+  - CIE 1931 XYZ in relative luminance
+  - CIE 1931 xyY in absolute luminance
+  - CIE 1931 xyY in relative luminance
+  - CIE 1976 L\*a\*b\*
+  - Linear and non-linear device colors spaces with arbitrary dimensionality
+- Comes with the following transfer functions:
+  - sRGB
+  - Custom gamma curve
+- Light emitters:
+  - CIE standard illuminants
+  - Black body radiator
 
 ## Usage
 

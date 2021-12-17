@@ -95,7 +95,9 @@ func main() {
 	//emissionValue := emission.CIE1931XYZRel{X: 0.95047, Y: 1, Z: 1.08883}
 	//emissionValue := colorProfile.WhitePoint().Scaled(0.1)
 	//emissionValue := emission.StandardIlluminantA.Absolute(200)
-	emissionValue := emission.BlackBodyArea{Temperature: 2000, Area: 0.15}
+	//emissionValue := emission.BlackBodyFixed{Temperature: 1600, Luminance: 200}
+	emissionValue := emission.BlackBodyArea{Temperature: 2800, Area: 0.002}
+	//emissionValue := emission.DCSVector{1, 1, 1, 0, 0}
 
 	if err := light.SetColors(emissionValue); err != nil {
 		log.Printf("light.SetColors() failed: %v", err)
@@ -114,15 +116,15 @@ func main() {
 		log.Printf("Returned pilot: %v", pilot)
 	}
 
-	//return
+	return
 
-	frequency := 0.02 // In 1/s
+	frequency := 0.05 // In 1/s
 
 	for {
 		seconds := float64(time.Now().UnixNano()) * 1e-9
 		sineWave := math.Sin(frequency * 2 * math.Pi * seconds)
-		temp := 2300 + 1000*sineWave
-		emissionValue := emission.BlackBodyArea{Temperature: temp, Area: 2}
+		temp := 2600 + 1000*sineWave
+		emissionValue := emission.BlackBodyArea{Temperature: temp, Area: 0.3}
 
 		if err := light.SetColors(emissionValue); err != nil {
 			log.Printf("light.SetColors() failed: %v", err)

@@ -86,11 +86,11 @@ func (b BlackBodyArea) CIE1931XYZAbs() CIE1931XYZAbs {
 
 	const c1, c2 = 2 * math.Pi * ℎ * c * c, ℎ * c / k
 
-	f := func(λ, bandwidth float64) (Φe float64) {
-		// Approximate integral with rectangles.
-		return bandwidth * c1 / math.Pow(λ, 5) / (math.Exp(c2/λ/b.Temperature) - 1)
+	// Spectral flux function.
+	f := func(λ float64) (Φeλ float64) {
+		return c1 / math.Pow(λ, 5) / (math.Exp(c2/λ/b.Temperature) - 1)
 	}
 
-	x, y, z := StandardObserverCIE1931.Integrate(f)
+	x, y, z := StandardObserverCIE1931.IntegrateTrapezoidal(f)
 	return CIE1931XYZAbs{x, y, z}.Scaled(b.Area) // Scale by area to get the unit right.
 }
