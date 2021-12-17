@@ -19,15 +19,16 @@ The Y coordinate represents an absolute luminance with its unit being lumen, ins
 - Supports devices/modules with up to 6 emitters of different color (Up to 3 primaries like RGB, and up to 3 higher CRI "white" LEDs).
 - Optimizes automatically for high CRI and high luminance output, if the device supports that (RGBW or RGBCW).
 - Comes with support for the following color spaces:
-  - CIE 1931 XYZ in absolute luminance
-  - CIE 1931 XYZ in relative luminance
-  - CIE 1931 xyY in absolute luminance
-  - CIE 1931 xyY in relative luminance
+  - CIE 1931 XYZ with absolute luminance
+  - CIE 1931 XYZ with relative luminance
+  - CIE 1931 xyY with absolute luminance
+  - CIE 1931 xyY with relative luminance
   - CIE 1976 L\*a\*b\*
-  - Linear and non-linear device colors spaces with arbitrary dimensionality
+  - Linear and non-linear device color spaces with arbitrary dimensionality
 - Comes with the following transfer functions:
   - sRGB
-  - Custom gamma curve
+  - Gamma curve with any gamma value
+  - Custom ones can be implemented
 - Light emitters:
   - CIE standard illuminants
   - Black body radiator
