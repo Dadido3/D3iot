@@ -16,7 +16,29 @@ type CIE1976LAB struct {
 	WhitePoint CIE1931XYZRel // White point in CIE 1931 XYZ coordinates with relative luminance.
 }
 
-// TODO: Implement emission.Value interface.
+var _ Value = &CIE1976LAB{}
+
+// IntoDCS implements the Value interface.
+func (c CIE1976LAB) IntoDCS(cp ColorProfile) DCSVector {
+	return c.CIE1931XYZRel().IntoDCS(cp)
+}
+
+// FromDCS implements the Value interface.
+func (c *CIE1976LAB) FromDCS(cp ColorProfile, v DCSVector) error {
+	var res CIE1931XYZRel
+	if err := res.FromDCS(cp, v); err != nil {
+		return err
+	}
+
+	whitePoint := c.WhitePoint
+	// If there is no white point, use D65.
+	if whitePoint.X == 0 && whitePoint.Y == 0 && whitePoint.Z == 0 {
+		whitePoint = StandardIlluminantD65
+	}
+
+	*c = res.CIE1976LAB(whitePoint)
+	return nil
+}
 
 // CIE1931XYZRel returns the color in the CIE 1931 XYZ color space with relative luminance.
 func (c CIE1976LAB) CIE1931XYZRel() CIE1931XYZRel {

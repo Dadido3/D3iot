@@ -68,4 +68,4 @@ When you got your white point set you can dial in more or less random DCS vector
 > Also, reduce, block or turn off other light sources.
 
 Once the tool has created a color profile, you can use the `DCS -> LAB` button to determine the L\*a\*b\* color for any given DCS vector.
-With the help of this you can quickly go through vectors, check the correctness of their color transformation, and apply corrections if you see color differences.
+With the help of this you can quickly go through vectors, check the correctness of their color transformations, and apply corrections if you see color differences.
