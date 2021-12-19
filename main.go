@@ -96,8 +96,9 @@ func main() {
 	//emissionValue := colorProfile.WhitePoint().Scaled(0.1)
 	//emissionValue := emission.StandardIlluminantA.Absolute(200)
 	//emissionValue := emission.BlackBodyFixed{Temperature: 1600, Luminance: 200}
-	emissionValue := emission.BlackBodyArea{Temperature: 2800, Area: 0.002}
-	//emissionValue := emission.DCSVector{1, 1, 1, 0, 0}
+	emissionValue := emission.BlackBodyArea{Temperature: 2600, Area: 0.004}
+	//emissionValue := emission.DCSVector{0, 0.6, 0, 0, 0}
+	//emissionValue := emission.StandardRGB{R: 0.5, G: 0.0, B: 0.5}
 
 	if err := light.SetColors(emissionValue); err != nil {
 		log.Printf("light.SetColors() failed: %v", err)

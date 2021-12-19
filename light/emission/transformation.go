@@ -116,6 +116,17 @@ func (t TransformationLinDCSToXYZ) Inverted() (TransformationXYZToLinDCS, error)
 
 }
 
+// MustInverted returns the inverted transformation matrix as list of column vectors.
+//
+// This is an alias of t.Inverted() that does panic on any error.
+func (t TransformationLinDCSToXYZ) MustInverted() TransformationXYZToLinDCS {
+	inv, err := t.Inverted()
+	if err != nil {
+		panic(err)
+	}
+	return inv
+}
+
 // TransformationXYZToLinDCS represents a XYZ -> linear DCS transformation matrix by its row vectors.
 //
 //	t[0].X t[0].Y t[0].Z

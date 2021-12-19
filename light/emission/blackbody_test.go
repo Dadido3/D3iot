@@ -22,7 +22,7 @@ func TestBlackBodyFixed_CIE1931XYZAbs(t *testing.T) {
 			modelRelative := modelResult.Relative(1)
 			integratedRelative := integratedResult.Relative(integratedResult.Y)
 
-			dist := integratedRelative.CIE1976LABDistance(modelRelative, StandardIlluminantD65.CIE1931XYZRel())
+			dist := integratedRelative.CIE1976LABDistance(modelRelative, StandardIlluminantD65)
 			if dist > 1 {
 				t.Errorf("Blackbody model result %v differs from integrated result %v. ΔE* = %f", modelRelative.CIE1931xyYRel(), integratedRelative.CIE1931xyYRel(), dist)
 			}

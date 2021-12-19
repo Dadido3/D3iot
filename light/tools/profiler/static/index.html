@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Light device profiler</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script src="js/api.js"></script>
+</head>
+
+<body id="color-output" style="background-color: RGB(0,0,0);">
+    <div class="center-container">
+        <div class="group">
+            <p>DCS vector</p>
+            <table>
+                <tr id="dcs-last-row"><td>Sum</td><td id="dcs-sum"></td></tr>
+            </table>
+        </div>
+
+        <div class="group">
+            <p>Reference color</p>
+            <table>
+                <tr><td><label>L*</label></td><td><input type="number" id="input-L" class="LAB-input" name="L" min="0" max="100" step="0.1"></td></tr>
+                <tr><td><label>a*</label></td><td><input type="number" id="input-a" class="LAB-input" name="a" step="1"></td></tr>
+                <tr><td><label>b*</label></td><td><input type="number" id="input-b" class="LAB-input" name="b" step="1"></td></tr>
+                <tr><td>sRGB</td><td id="reference-sRGB"></td></tr>
+            </table>
+            <button id="button-dcs-to-lab">DCS -> LAB</button>
+        </div>
+
+        <button id="button-add-data-point">add data point</button>
+    </div>
+
+    <script>
+        let dcsInputElements = [];
+        function addDCSEntry(name) {
+            // <tr><td><label>0</label></td><td><input type="number" class="dcs-input" min="0" max="1" step="0.01"></td></tr>
+            let tableRow = $("<tr>");
+            let tableData1 = $("<td>");
+            let tableData2 = $("<td>");
+            let label = $("<label>");
+            let input = $('<input type="number" class="dcs-input" min="0" max="1" step="0.01">');
+
+            label.text(name);
+            input.val("0");
+
+            tableData1.append(label);
+            tableData2.append(input);
+            tableRow.append([tableData1, tableData2]);
+
+            tableRow.insertBefore("#dcs-last-row");
+
+            dcsInputElements.push(input);
+            input.bind('keyup change click', dcsChangeHandler);
+        }
+
+        // Get DCS vector from user input.
+        function getDCS() {
+            let res = [];
+            dcsInputElements.forEach(function(element) {
+                res.push(parseFloat(element.val()));
+            });
+            return res;
+        }
+
+        // Get reference color from user input.
+        function getLAB() {
+            return {
+                L: parseFloat($("#input-L").val()),
+                A: parseFloat($("#input-a").val()),
+                B: parseFloat($("#input-b").val())
+            };
+        }
+
+        // Set reference color.
+        function setLAB(labColor) {
+            $("#input-L").val(labColor.L.toFixed(2));
+            $("#input-a").val(labColor.A.toFixed(1));
+            $("#input-b").val(labColor.B.toFixed(1));
+        }
+
+        function dcsChangeHandler(e) {
+            let dcsVector = getDCS();
+            api.setDCSVector(dcsVector);
+
+            let sum = dcsVector.reduce((pv, cv) => pv + cv, 0.0);
+            $("#dcs-sum").text(Math.round(sum * 1000) / 1000);
+            if (sum >= 2) {
+                $("#dcs-sum").addClass("value-alert");
+            } else {
+                $("#dcs-sum").removeClass("value-alert");
+            }
+        }
+
+        function LABUpdateColor(labColor) {
+            api.LAB2sRGB(labColor).done(function (data) {
+                let sRGB = $.parseJSON(data);
+                let {r, g, b} = {r: sRGB.R, g: sRGB.G, b: sRGB.B};
+
+                //$("#color-output").css({"background-color": "color(sRGB " + r/255.0 + " " + g/255.0 + " " + b/255.0 + ");"}); // Not really supported anywhere.
+                $("#color-output").css({"background-color": "rgb(" + r*255 + ", " + g*255 + ", " + b*255 + ")"});
+                $("#reference-sRGB").text(Math.round(r*100)/100 + ", " + Math.round(g*100)/100 + ", " + Math.round(b*100)/100);
+                if (r >= 0.99 || r <= 0.01 || g >= 0.99 || g <= 0.01 || b >= 0.99 || b <= 0.01) {
+                    $("#reference-sRGB").addClass("value-alert");
+                } else {
+                    $("#reference-sRGB").removeClass("value-alert");
+                }
+
+            });
+        }
+
+        function LABChangeHandler(e) {
+            LABUpdateColor(getLAB());
+        }
+
+        function addDataPointClickHandler(e) {
+            let dcsVector = getDCS();
+            let labColor = getLAB();
+            api.addDataPoint(dcsVector, labColor);
+        }
+
+        function dcsToLABClickHandler(e) {
+            let dcsVector = getDCS();
+            api.DCS2LAB(dcsVector).done(function (data) {
+                let labColor = $.parseJSON(data);
+                setLAB(labColor);
+                LABUpdateColor(labColor);
+            });
+        }
+
+        $(".LAB-input").bind('keyup change click', LABChangeHandler);
+
+        $("#button-add-data-point").bind('click', addDataPointClickHandler);
+        $("#button-dcs-to-lab").bind('click', dcsToLABClickHandler);
+
+        $(document).ready(function () {
+            api.getChannels().done(function (channels) {
+                for (let i = 0; i < channels; i++) {
+                    addDCSEntry(i.toString());
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

@@ -104,6 +104,14 @@ func (c *CIE1931XYZRel) FromDCS(cp ColorProfile, v DCSVector) error {
 	return nil
 }
 
+// TransformRGB writes the color into the given RGB color space.
+//
+//	var rgbColor StandardRGB
+//	c.TransformRGB(&rgbColor) // Writes result into rgbColor.
+func (c CIE1931XYZRel) TransformRGB(rgbColor RGB) {
+	rgbColor.FromCIE1931XYZRel(c)
+}
+
 // Absolute returns the color in the CIE 1931 XYZ color space with absolute luminance in lumen.
 //
 // maxLuminance defines the highest possible luminance in lumen.
@@ -149,6 +157,16 @@ func (c CIE1931XYZRel) CIE1976LABDistance(c2 CIE1931XYZRel, whitePoint CIE1931XY
 	c2LAB := c2.CIE1976LAB(whitePoint)
 
 	return cLAB.Distance(c2LAB)
+}
+
+// CIE1976LABDistanceSqr returns the squared euclidean distance between c and c2 in the CIE 1976 L*a*b* color space.
+//
+// See c.CIE1976LABDistance() for details.
+func (c CIE1931XYZRel) CIE1976LABDistanceSqr(c2 CIE1931XYZRel, whitePoint CIE1931XYZRel) float64 {
+	cLAB := c.CIE1976LAB(whitePoint)
+	c2LAB := c2.CIE1976LAB(whitePoint)
+
+	return cLAB.DistanceSqr(c2LAB)
 }
 
 // CIE1976LAB returns the color transformed into the CIE 1976 L*a*b* color space with the given white point.

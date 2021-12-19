@@ -16,6 +16,8 @@ type CIE1976LAB struct {
 	WhitePoint CIE1931XYZRel // White point in CIE 1931 XYZ coordinates with relative luminance.
 }
 
+// TODO: Implement emission.Value interface.
+
 // CIE1931XYZRel returns the color in the CIE 1931 XYZ color space with relative luminance.
 func (c CIE1976LAB) CIE1931XYZRel() CIE1931XYZRel {
 	// Using the intent of the CIE standard, not the numbers published by the CIE. See http://www.brucelindbloom.com/LContinuity.html.
@@ -34,7 +36,7 @@ func (c CIE1976LAB) CIE1931XYZRel() CIE1931XYZRel {
 	return CIE1931XYZRel{
 		X: c.WhitePoint.X * fInv(lScaled+c.A/500),
 		Y: c.WhitePoint.Y * fInv(lScaled),
-		Z: c.WhitePoint.X * fInv(lScaled-c.B/200),
+		Z: c.WhitePoint.Z * fInv(lScaled-c.B/200),
 	}
 }
 
@@ -52,4 +54,15 @@ func (c CIE1976LAB) Distance(c2 CIE1976LAB) float64 {
 	bDiff := c.B - c2.B
 
 	return math.Sqrt(lDiff*lDiff + aDiff*aDiff + bDiff*bDiff)
+}
+
+// DistanceSqr returns the squared euclidean distance between c and c2.
+//
+// See c.Distance() for details.
+func (c CIE1976LAB) DistanceSqr(c2 CIE1976LAB) float64 {
+	lDiff := c.L - c2.L
+	aDiff := c.A - c2.A
+	bDiff := c.B - c2.B
+
+	return lDiff*lDiff + aDiff*aDiff + bDiff*bDiff
 }
