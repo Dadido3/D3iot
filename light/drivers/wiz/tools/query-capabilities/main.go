@@ -28,6 +28,7 @@ type Result struct {
 	CurrentFavs         wiz.Favs         // Current Favorite settings.
 	CurrentSystemConfig wiz.SystemConfig // Current system configuration.
 	CurrentUserConfig   wiz.UserConfig   // Current user configuration.
+	CurrentModelConfig  wiz.ModelConfig  // Current model configuration.
 
 	SupportedScenes  []wiz.Scene // List of supported scenes.
 	MinTemp, MaxTemp *uint       // Temperature range [minTemp, maxTemp] in K.
@@ -83,6 +84,13 @@ func main() {
 		log.Panicf("light.GetUserConfig() failed: %v", err)
 	} else {
 		res.CurrentUserConfig = userConfig
+	}
+
+	// Get model configuration settings.
+	if modelConfig, err := light.GetModelConfig(); err != nil {
+		log.Panicf("light.GetModelConfig() failed: %v", err)
+	} else {
+		res.CurrentModelConfig = modelConfig
 	}
 
 	// Get matched product and its capabilities.

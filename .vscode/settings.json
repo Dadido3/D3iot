@@ -1,6 +1,7 @@
 {
     "cSpell.words": [
         "Dadido",
+        "Deepdive",
         "Favs",
         "gonum",
         "Leuchten",
@@ -8,6 +9,8 @@
         "lucasb",
         "Mojito",
         "Nelder",
+        "NOWC",
+        "Plantgrowth",
         "Pset",
         "RGBCW",
         "RGBTW",
@@ -21,7 +24,8 @@
         "SHRGBP",
         "SHTW",
         "unmarshals",
-        "Vogel"
+        "Vogel",
+        "wizc"
     ],
     "licenser.author": "David Vogel",
     "licenser.license": "MIT",

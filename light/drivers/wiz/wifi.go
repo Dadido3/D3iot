@@ -27,6 +27,27 @@ type Favs struct {
 	Opts [4][]int  `json:"opts"` // No idea.
 }
 
+// WizC its purpose is unknown.
+type WizC struct {
+	Mode [7]int `json:"mode"`
+}
+
+type ModelConfig struct {
+	PS           int     `json:"ps"`           // No idea.
+	PWMFreq      uint    `json:"pwmFreq"`      // PWM frequency.
+	PWMRange     [2]uint `json:"pwmRange"`     // PWM (duty cycle?) range as lower and upper limit.
+	WCR          int     `json:"wcr"`          // Somehow defines the type of light bulb.
+	NOWC         int     `json:"nowc"`         // Somehow defines the type of light bulb.
+	CCTRange     [4]uint `json:"cctRange"`     // The range of allowed color temperatures. My guess is CCTRange[0] and CCTRange[3] is the extended range, CCTRange[1] and CCTRange[2] the native range.
+	RenderFactor [10]int `json:"renderFactor"` // No idea. Previously known as ewf in the SystemConfig, maybe something related to the extended color temperature range (extended white factor?).
+	HasAdjMinDim int     `json:"hasAdjMinDim"` // Adjustable min dim boolean as int?
+	HasTapSensor int     `json:"hasTapSensor"` // Has tap sensor boolean as int?
+	PM           int     `json:"pm"`           // no idea.
+	FanSpeed     int     `json:"fanSpeed"`     // Fan speed in some unit.
+	WizC1        WizC    `json:"wizc1"`        // No idea.
+	WizC2        WizC    `json:"wizc2"`        // No idea.
+}
+
 type SystemConfig struct {
 	Mac         string `json:"mac"`
 	HomeID      uint   `json:"homeId"`
@@ -38,7 +59,6 @@ type SystemConfig struct {
 	TypeID      uint   `json:"typeId"`
 	HomeLock    bool   `json:"homeLock"`
 	PairingLock bool   `json:"pairingLock"`
-	DrvConf     []int  `json:"drvConf"`
 	Ping        uint   `json:"ping"`
 }
 
@@ -79,6 +99,7 @@ const (
 
 	methodGetDevInfo      method = "getDevInfo"
 	methodGetFavs         method = "getFavs"
+	methodGetModelConfig  method = "getModelConfig"
 	methodGetPilot        method = "getPilot"
 	methodGetSystemConfig method = "getSystemConfig"
 	methodGetUserConfig   method = "getUserConfig"
@@ -219,6 +240,24 @@ func (l *Light) GetFavs() (Favs, error) {
 	r.Result = &result
 	if err := l.jsonQuery(q, &r); err != nil {
 		return Favs{}, err
+	}
+
+	return result, r.Check(q.Method) // This may return data in case of an error.
+}
+
+// GetModelConfig queries the bulb for information about its model.
+func (l *Light) GetModelConfig() (ModelConfig, error) {
+	q := query{
+		Method: methodGetModelConfig,
+		Env:    "pro",
+	}
+
+	result := ModelConfig{}
+
+	var r response
+	r.Result = &result
+	if err := l.jsonQuery(q, &r); err != nil {
+		return ModelConfig{}, err
 	}
 
 	return result, r.Check(q.Method) // This may return data in case of an error.
