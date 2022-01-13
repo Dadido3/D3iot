@@ -12,7 +12,7 @@ light, err := wiz.NewLight("192.168.1.123:38899")
 
 Check the packages for the devices you want to connect with for more details:
 
-- [WiZ](wiz/)
+- [WiZ](drivers/wiz/)
 
 ### Modules
 
