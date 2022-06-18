@@ -130,6 +130,25 @@ func (c CIE1931XYZRel) CIE1931xyYRel() CIE1931xyYRel {
 	}
 }
 
+// ClampedUniform returns XYZ scaled by a single scaling factor in a way so that every component is below or equal to one.
+//
+//	CIE1931XYZRel{1.1, 0.9, -0.1} --> CIE1931XYZRel{1.0, 0.818, -0.091}
+func (c CIE1931XYZRel) ClampedUniform() CIE1931XYZRel {
+	scale := 1.0
+
+	if neededScale := 1.0 / c.X; c.X > 1.0 && scale > neededScale {
+		scale = neededScale
+	}
+	if neededScale := 1.0 / c.Y; c.Y > 1.0 && scale > neededScale {
+		scale = neededScale
+	}
+	if neededScale := 1.0 / c.Z; c.Z > 1.0 && scale > neededScale {
+		scale = neededScale
+	}
+
+	return c.Scaled(scale)
+}
+
 // Scaled returns c scaled by the scalar s.
 func (c CIE1931XYZRel) Scaled(s float64) CIE1931XYZRel {
 	return CIE1931XYZRel{c.X * s, c.Y * s, c.Z * s}

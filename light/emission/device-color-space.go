@@ -139,14 +139,14 @@ func (v LinDCSVector) ClampedIndividually() LinDCSVector {
 	return result
 }
 
-// ClampedUniform returns all channel scaled by a single scaling factor in a way so that every channel is below or equal to one.
+// ClampedUniform returns all channels scaled by a single scaling factor in a way so that every channel is below or equal to one.
 //
 //	LinDCSVector{1.1, 0.9, -0.1} --> LinDCSVector{1.0, 0.818, -0.091}
 func (v LinDCSVector) ClampedUniform() LinDCSVector {
 	scale := 1.0
 	for _, channel := range v {
 		neededScale := 1.0 / channel
-		if channel > 0 && scale > neededScale {
+		if channel > 1.0 && scale > neededScale {
 			scale = neededScale
 		}
 	}
