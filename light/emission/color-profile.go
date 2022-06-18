@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -39,4 +39,14 @@ type ColorProfile interface {
 	DCSToXYZ(v DCSVector) (CIE1931XYZAbs, error)
 
 	TransferFunction() TransferFunction
+
+	// NoWhiteOptimizationColorProfile returns a copy of this color profile with all high CRI white emitters disabled.
+	//
+	// The output of such profile can not optimize for high CRI and high luminance.
+	// This will cause that the emitted color is only constructed by the primary colors (e.g. red, green, blue).
+	// This will not change the emitted color, but the maximum brightness may be reduced and the CRI is not as good as it could be.
+	// One use-case could be to eliminate any timing discrepancy between high CRI whites and primary color emitters, as these two classes of emitters may be filtered (by a low-pass) in a different way.
+	//
+	// Some color profiles do not support this and will just return themselves.
+	NoWhiteOptimizationColorProfile() ColorProfile
 }

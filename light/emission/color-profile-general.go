@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -44,6 +44,12 @@ type ColorProfileGeneral struct {
 	// Transfer function to convert from a linear device color space into a non linear device color space, and vice versa.
 	// Set to nil if your DCS is linear.
 	TransferFunc TransferFunction
+
+	// Disables high CRI and high luminance optimization by disabling white emitters.
+	noWhiteOptimization bool
+
+	// Variant of this color profile without high CRI white light emitters.
+	noWhiteOptimizationColorProfile ColorProfile
 }
 
 // Check if it implements ColorProfile.
@@ -61,11 +67,23 @@ func (e *ColorProfileGeneral) Init() error {
 		return fmt.Errorf("failed to invert white color matrix: %w", err)
 	}
 
+	e.noWhiteOptimizationColorProfile = &ColorProfileGeneral{
+		WhitePointColor:                 e.WhitePointColor,
+		PrimaryColors:                   e.PrimaryColors,
+		invPrimaryColors:                e.invPrimaryColors,
+		WhiteColors:                     e.WhiteColors,
+		invWhiteColors:                  e.invWhiteColors,
+		OutputLimiter:                   e.OutputLimiter,
+		TransferFunc:                    e.TransferFunc,
+		noWhiteOptimizationColorProfile: nil, // Can't easily put a self reference in here, but the getter method will take care of this edge case.
+		noWhiteOptimization:             true,
+	}
+
 	return nil
 }
 
 // MustInit is the same as Init(), but panics on any error.
-// As a small help, this returns the module itself.
+// As a small help, this returns the color profile itself.
 func (e *ColorProfileGeneral) MustInit() *ColorProfileGeneral {
 	if err := e.Init(); err != nil {
 		panic(fmt.Sprintf("Failed to init module profile %v: %v", e, err))
@@ -109,43 +127,47 @@ func (e *ColorProfileGeneral) XYZToDCS(color CIE1931XYZAbs) DCSVector {
 	// Determine the DCS values of the primary channels.
 	primaryV := e.invPrimaryColors.Multiplied(color)
 
-	// Determine the closest possible DCS values of the white channels.
-	whiteV := e.invWhiteColors.Multiplied(color).ClampedToPositive()
-	// Get the color of whiteValues
-	whiteColor, err := e.WhiteColors.Multiplied(whiteV)
-	if err != nil {
-		panic(err) // Shouldn't happen.
-	}
-	// Get the proportions of the primary colors that represent whiteColor.
-	// Can contain negative values if the white is outside the gamut of the primaries.
-	whiteVInPrimary := e.invPrimaryColors.Multiplied(whiteColor)
+	// Optimize for high CRI and high luminance output, if wanted.
+	whiteV := make(LinDCSVector, e.invWhiteColors.DCSChannels())
+	if !e.noWhiteOptimization {
+		// Determine the closest possible DCS values of the white channels.
+		whiteV = e.invWhiteColors.Multiplied(color).ClampedToPositive()
+		// Get the color of whiteValues
+		whiteColor, err := e.WhiteColors.Multiplied(whiteV)
+		if err != nil {
+			panic(err) // Shouldn't happen.
+		}
+		// Get the proportions of the primary colors that represent whiteColor.
+		// Can contain negative values if the white is outside the gamut of the primaries.
+		whiteVInPrimary := e.invPrimaryColors.Multiplied(whiteColor)
 
-	// The following is just a question of how to weight the different values.
-	// We want to increase the CRI and light output.
-	// The primary values are decreased as the whites are increased, in a way that doesn't change the total luminance or color output.
+		// The following is just a question of how to weight the different values.
+		// We want to increase the CRI and light output.
+		// The primary values are decreased as the whites are increased, in a way that doesn't change the total luminance or color output.
 
-	whiteScaling, err := primaryV.ScaledToPositiveDifference(whiteVInPrimary)
-	if err != nil {
-		panic(err) // Shouldn't happen.
-	}
+		whiteScaling, err := primaryV.ScaledToPositiveDifference(whiteVInPrimary)
+		if err != nil {
+			panic(err) // Shouldn't happen.
+		}
 
-	primaryV, err = primaryV.Sum(whiteVInPrimary.Scaled(-whiteScaling))
-	if err != nil {
-		panic(err) // Shouldn't happen.
+		primaryV, err = primaryV.Sum(whiteVInPrimary.Scaled(-whiteScaling))
+		if err != nil {
+			panic(err) // Shouldn't happen.
+		}
+		whiteV = whiteV.Scaled(whiteScaling)
 	}
-	whiteV = whiteV.Scaled(whiteScaling)
 
 	// Put all values into one slice.
 	linV := make(LinDCSVector, 0, primaryV.Channels()+whiteV.Channels())
 	linV = append(append(linV, primaryV...), whiteV...)
 
+	// Prevent any channel from clipping in a way that doesn't change the color.
+	linV = linV.ClampedUniform()
+
 	// Limit output.
 	if e.OutputLimiter != nil {
 		linV = e.OutputLimiter.LimitDCS(linV)
 	}
-
-	// Prevent any channel from clipping in a way that doesn't change the color.
-	linV = linV.ClampedUniform()
 
 	// Clamp values, apply transfer function.
 	nonLinV := linV.ClampedAndDeLinearized(e.TransferFunc)
@@ -183,4 +205,21 @@ func (e *ColorProfileGeneral) DCSToXYZ(v DCSVector) (CIE1931XYZAbs, error) {
 
 func (e *ColorProfileGeneral) TransferFunction() TransferFunction {
 	return e.TransferFunc
+}
+
+// NoWhiteOptimizationColorProfile returns a copy of this color profile with all high CRI white emitters disabled.
+//
+// The output of such profile can not optimize for high CRI and high luminance.
+// This will cause that the emitted color is only constructed by the primary colors (e.g. red, green, blue).
+// This will not change the emitted color, but the maximum brightness may be reduced and the CRI is not as good as it could be.
+// One use-case could be to eliminate any timing discrepancy between high CRI whites and primary color emitters, as these two classes of emitters may be filtered (by a low-pass) in a different way.
+//
+// Some color profiles do not support this and will just return themselves.
+func (e *ColorProfileGeneral) NoWhiteOptimizationColorProfile() ColorProfile {
+	if e.noWhiteOptimizationColorProfile != nil {
+		return e.noWhiteOptimizationColorProfile
+	}
+
+	// Fall back to itself.
+	return e
 }

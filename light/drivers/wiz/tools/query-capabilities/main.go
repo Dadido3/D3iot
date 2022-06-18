@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -140,7 +140,7 @@ func main() {
 		}
 
 		// Read pilot and use that to determine minTemp and maxTemp.
-		// Some temperatures may be setable, but the device will clip them into its allowed range.
+		// Some temperatures may be settable, but the device will clip them into its allowed range.
 		if pilot, err := light.GetPilot(); err != nil {
 			log.Panicf("light.GetPilot() failed: %v", err)
 		} else {

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// Scaled sRGB primaries with a whitepoint of D65.
+// Scaled sRGB primaries with a white point of D65.
 var (
 	standardRGBRed   = CIE1931XYZAbs{0.4124564, 0.2126729, 0.0193339}
 	standardRGBGreen = CIE1931XYZAbs{0.3575761, 0.7151522, 0.1191920}
