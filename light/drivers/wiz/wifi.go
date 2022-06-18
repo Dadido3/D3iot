@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -36,8 +36,8 @@ type ModelConfig struct {
 	PS           int     `json:"ps"`           // No idea.
 	PWMFreq      uint    `json:"pwmFreq"`      // PWM frequency.
 	PWMRange     [2]uint `json:"pwmRange"`     // PWM (duty cycle?) range as lower and upper limit.
-	WCR          int     `json:"wcr"`          // Somehow defines the type of light bulb.
-	NOWC         int     `json:"nowc"`         // Somehow defines the type of light bulb.
+	WCR          int     `json:"wcr"`          // Somehow defines the type of light bulb. Formerly the first entry in the DrvConf field of SystemConfig.
+	NOWC         int     `json:"nowc"`         // Somehow defines the type of light bulb. Formerly the second entry in the DrvConf field of SystemConfig.
 	CCTRange     [4]uint `json:"cctRange"`     // The range of allowed color temperatures. My guess is CCTRange[0] and CCTRange[3] is the extended range, CCTRange[1] and CCTRange[2] the native range.
 	RenderFactor [10]int `json:"renderFactor"` // No idea. Previously known as ewf in the SystemConfig, maybe something related to the extended color temperature range (extended white factor?).
 	HasAdjMinDim int     `json:"hasAdjMinDim"` // Adjustable min dim boolean as int?
