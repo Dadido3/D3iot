@@ -92,7 +92,7 @@ linDCS := dcsVectorRGBCW.ClampedAndLinearized(emission.TransferFunctionStandardR
 dcsVector := linDCS.ClampedAndDeLinearized(emission.TransferFunctionStandardRGB)
 ```
 
-They are of different types, so you can't just use the wrong one accidentally.
+Linear and non linear DCS vectors are of different type, so you can't just use the wrong one accidentally.
 
 #### RGB color spaces
 
