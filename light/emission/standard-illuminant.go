@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -60,14 +60,14 @@ type StandardIlluminantDSeries struct {
 	Luminance   float64 // Luminance in lumen.
 }
 
-var _ ValueIntoDCS = &StandardIlluminantDSeries{} // TODO: Implement transformation from DCS
+var _ Value = &StandardIlluminantDSeries{} // TODO: Implement transformation from DCS
 
 // IntoDCS implements the Value interface.
 func (si StandardIlluminantDSeries) IntoDCS(cp ColorProfile) DCSVector {
 	return cp.XYZToDCS(si.CIE1931XYZAbs())
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 /*func (si *StandardIlluminantDSeries) FromDCS(cp ColorProfile, v DCSVector) error {
 	// Calculate CCT.
 	return fmt.Errorf("conversion from DCS to %T not implemented yet", si)

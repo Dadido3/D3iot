@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -23,7 +23,7 @@ type Light struct {
 	// This must not be nil.
 	product *Product
 
-	deadline  time.Duration // Default deadline for a whole communcation action (sending and receiving).
+	deadline  time.Duration // Default timeout duration for any communication operation (sending and receiving).
 	retries   uint          // Number of retries when the deadline got exceeded.
 	connMutex sync.Mutex    // Mutex preventing simultaneous connections to this device.
 	//paramMutex sync.Mutex    // Mutex protecting parameters of this object.
@@ -97,7 +97,7 @@ func (l *Light) Product() *Product {
 // SetColors sets the emission values of all the modules in the light device.
 // Values which are not set are assumed to equal a turned off module.
 // This must return an error if there are more values than there are modules in a light device.
-func (l *Light) SetColors(emissionValues ...emission.ValueIntoDCS) error {
+func (l *Light) SetColors(emissionValues ...emission.Value) error {
 	switch len(emissionValues) {
 	case 0:
 		pilot := NewPilot(false)
@@ -146,7 +146,7 @@ func (l *Light) SetColors(emissionValues ...emission.ValueIntoDCS) error {
 
 // GetColors queries the light device for all emission values of its modules and writes them back into the given list emissionValues.
 // This must return an error if there are more values than there are modules in a light device.
-func (l *Light) GetColors(emissionValues ...emission.ValueFromDCS) error {
+func (l *Light) GetColors(emissionValues ...emission.ValueReceiver) error {
 	// Check number of emission values.
 	switch len(emissionValues) {
 	case 0:

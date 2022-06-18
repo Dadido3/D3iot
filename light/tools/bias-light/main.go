@@ -60,7 +60,7 @@ func main() {
 		relXYZ := sRGB.CIE1931XYZRel().Scaled(*flagBrighten)
 		relXYZ = relXYZ.ClampedUniform()
 
-		var emissionValue emission.ValueIntoDCS
+		var emissionValue emission.Value
 		if *flagMaxLuminance > 0 {
 			// Convert into absolute emission value with the given luminance.
 			emissionValue = relXYZ.Absolute(*flagMaxLuminance)

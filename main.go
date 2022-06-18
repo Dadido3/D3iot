@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -7,8 +7,6 @@ package main
 
 import (
 	"log"
-	"math"
-	"time"
 
 	"github.com/Dadido3/D3iot/light/drivers/wiz"
 	"github.com/Dadido3/D3iot/light/emission"
@@ -90,15 +88,20 @@ func main() {
 		log.Printf("light.SetPilot() failed: %v", err)
 	}*/
 
-	//colorProfile := light.ColorProfiles()[0]
-
 	//emissionValue := emission.CIE1931XYZRel{X: 0.95047, Y: 1, Z: 1.08883}
-	//emissionValue := colorProfile.WhitePoint().Scaled(0.1)
-	//emissionValue := emission.StandardIlluminantA.Absolute(200)
-	//emissionValue := emission.BlackBodyFixed{Temperature: 1600, Luminance: 200}
-	emissionValue := emission.BlackBodyArea{Temperature: 2600, Area: 0.004}
-	//emissionValue := emission.DCSVector{0, 0.6, 0, 0, 0}
-	//emissionValue := emission.StandardRGB{R: 0.5, G: 0.0, B: 0.5}
+	//emissionValue := light.ColorProfiles()[0].WhitePoint().Scaled(200.0 / 1521)
+	//emissionValue := emission.NoWhiteOptimization{emission.StandardIlluminantA.Absolute(200)}
+	emissionValue := emission.StandardIlluminantA.Absolute(200)
+	//emissionValue := emission.StandardIlluminantD50.Absolute(600)
+	//emissionValue := emission.StandardIlluminantD50.Absolute(500)
+	//emissionValue := emission.BlackBodyFixed{Temperature: 5000, Luminance: 200}
+	//emissionValue := emission.BlackBodyArea{Temperature: 5000, Area: 0.004}
+	//emissionValue := emission.DCSVector{0.7, 0.5, 0.4, 0, 0}
+	//emissionValue := emission.DCSVector{0, 0, 0, 0.3, 0}
+	//emissionValue := emission.StandardRGB{R: 0.7, G: 0.0, B: 0.0}
+	//emissionValue := emission.DCSVector{1, 1, 1, 0, 0}
+
+	//emissionValue := light.ColorProfiles()[0].ChannelPoints()[3]
 
 	if err := light.SetColors(emissionValue); err != nil {
 		log.Printf("light.SetColors() failed: %v", err)
@@ -117,20 +120,19 @@ func main() {
 		log.Printf("Returned pilot: %v", pilot)
 	}
 
-	return
-
-	frequency := 0.05 // In 1/s
+	/*frequency := 0.05 // In 1/s
+	startTime := time.Now()
 
 	for {
-		seconds := float64(time.Now().UnixNano()) * 1e-9
+		seconds := time.Since(startTime).Seconds()
 		sineWave := math.Sin(frequency * 2 * math.Pi * seconds)
-		temp := 2600 + 1000*sineWave
-		emissionValue := emission.BlackBodyArea{Temperature: temp, Area: 0.3}
+		temp := 2800 + 1000*sineWave
+		emissionValue := emission.BlackBodyArea{Temperature: temp, Area: 0.004}
 
 		if err := light.SetColors(emissionValue); err != nil {
 			log.Printf("light.SetColors() failed: %v", err)
 		}
 
 		time.Sleep(10 * time.Millisecond)
-	}
+	}*/
 }

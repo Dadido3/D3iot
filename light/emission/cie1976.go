@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -16,14 +16,17 @@ type CIE1976LAB struct {
 	WhitePoint CIE1931XYZRel // White point in CIE 1931 XYZ coordinates with relative luminance.
 }
 
-var _ Value = &CIE1976LAB{}
+var (
+	_ Value         = &CIE1976LAB{}
+	_ ValueReceiver = &CIE1976LAB{}
+)
 
 // IntoDCS implements the Value interface.
 func (c CIE1976LAB) IntoDCS(cp ColorProfile) DCSVector {
 	return c.CIE1931XYZRel().IntoDCS(cp)
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 func (c *CIE1976LAB) FromDCS(cp ColorProfile, v DCSVector) error {
 	var res CIE1931XYZRel
 	if err := res.FromDCS(cp, v); err != nil {

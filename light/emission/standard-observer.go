@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -572,7 +572,7 @@ var StandardObserverCIE1931 = standardObserverCIE{
 
 // StandardObserverCIE1931Coarse contains the CIE 1931 color matching functions x̅(λ), y̅(λ), z̅(λ).
 //
-// This table has a reduced resultion of 5 nm.
+// This table has a reduced resolution of 5 nm.
 //
 // Source: http://cvrl.ioo.ucl.ac.uk/cmfs.htm.
 var StandardObserverCIE1931Coarse = standardObserverCIE{

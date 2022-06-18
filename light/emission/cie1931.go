@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -17,14 +17,17 @@ type CIE1931XYZAbs struct {
 	X, Y, Z float64
 }
 
-var _ Value = &CIE1931XYZAbs{}
+var (
+	_ Value         = &CIE1931XYZAbs{}
+	_ ValueReceiver = &CIE1931XYZAbs{}
+)
 
 // IntoDCS implements the Value interface.
 func (c CIE1931XYZAbs) IntoDCS(cp ColorProfile) DCSVector {
 	return cp.XYZToDCS(c)
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 func (c *CIE1931XYZAbs) FromDCS(cp ColorProfile, v DCSVector) error {
 	var err error
 	if *c, err = cp.DCSToXYZ(v); err != nil {
@@ -84,7 +87,10 @@ type CIE1931XYZRel struct {
 	X, Y, Z float64
 }
 
-var _ Value = &CIE1931XYZRel{}
+var (
+	_ Value         = &CIE1931XYZRel{}
+	_ ValueReceiver = &CIE1931XYZRel{}
+)
 
 // IntoDCS implements the Value interface.
 func (c CIE1931XYZRel) IntoDCS(cp ColorProfile) DCSVector {
@@ -92,7 +98,7 @@ func (c CIE1931XYZRel) IntoDCS(cp ColorProfile) DCSVector {
 	return c.Absolute(maxLuminance).IntoDCS(cp)
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 func (c *CIE1931XYZRel) FromDCS(cp ColorProfile, v DCSVector) error {
 	var res CIE1931XYZAbs
 	if err := res.FromDCS(cp, v); err != nil {
@@ -217,14 +223,17 @@ type CIE1931xyYAbs struct {
 	LuminanceY float64 // Luminance Y in lumen.
 }
 
-var _ Value = &CIE1931xyYAbs{}
+var (
+	_ Value         = &CIE1931xyYAbs{}
+	_ ValueReceiver = &CIE1931xyYAbs{}
+)
 
 // IntoDCS implements the Value interface.
 func (c CIE1931xyYAbs) IntoDCS(cp ColorProfile) DCSVector {
 	return cp.XYZToDCS(c.CIE1931XYZAbs())
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 func (c *CIE1931xyYAbs) FromDCS(cp ColorProfile, v DCSVector) error {
 	if xyzColor, err := cp.DCSToXYZ(v); err != nil {
 		return fmt.Errorf("failed to convert from DCS to %T: %w", c, err)
@@ -269,7 +278,10 @@ type CIE1931xyYRel struct {
 	LuminanceY float64 // Relative luminance Y in the range of [0, 1].
 }
 
-var _ Value = &CIE1931xyYRel{}
+var (
+	_ Value         = &CIE1931xyYRel{}
+	_ ValueReceiver = &CIE1931xyYRel{}
+)
 
 // IntoDCS implements the Value interface.
 func (c CIE1931xyYRel) IntoDCS(cp ColorProfile) DCSVector {
@@ -277,7 +289,7 @@ func (c CIE1931xyYRel) IntoDCS(cp ColorProfile) DCSVector {
 	return c.Absolute(maxLuminance).IntoDCS(cp)
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 func (c *CIE1931xyYRel) FromDCS(cp ColorProfile, v DCSVector) error {
 	var res CIE1931xyYAbs
 	if err := res.FromDCS(cp, v); err != nil {

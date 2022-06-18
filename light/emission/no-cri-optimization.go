@@ -14,8 +14,10 @@ package emission
 //
 // This does not work on DCS vectors, even though they implement the emission.Value interface.
 type NoWhiteOptimization struct {
-	EmissionValue ValueIntoDCS
+	EmissionValue Value
 }
+
+var _ Value = &NoWhiteOptimization{}
 
 // IntoDCS implements the Value interface.
 func (n NoWhiteOptimization) IntoDCS(cp ColorProfile) DCSVector {

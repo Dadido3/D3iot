@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -52,7 +52,7 @@ func (c StandardRGB) IntoDCS(cp ColorProfile) DCSVector {
 	return c.CIE1931XYZRel().IntoDCS(cp)
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 func (c *StandardRGB) FromDCS(cp ColorProfile, v DCSVector) error {
 	var xyzColor CIE1931XYZRel
 	if err := xyzColor.FromDCS(cp, v); err != nil {

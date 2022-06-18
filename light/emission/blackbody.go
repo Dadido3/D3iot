@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -17,14 +17,14 @@ type BlackBodyFixed struct {
 	Luminance   float64 // Luminance in lumen.
 }
 
-var _ ValueIntoDCS = &BlackBodyFixed{} // TODO: Implement transformation from DCS
+var _ Value = &BlackBodyFixed{} // TODO: Implement transformation from DCS
 
 // IntoDCS implements the Value interface.
 func (b BlackBodyFixed) IntoDCS(cp ColorProfile) DCSVector {
 	return cp.XYZToDCS(b.CIE1931XYZAbs())
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 /*func (b *BlackBodyFixed) FromDCS(cp ColorProfile, v DCSVector) error {
 	// Calculate CCT.
 	return fmt.Errorf("conversion from DCS to %T not implemented yet", b)
@@ -72,7 +72,7 @@ type BlackBodyArea struct {
 	Area        float64 // Area in m².
 }
 
-var _ ValueIntoDCS = &BlackBodyArea{} // TODO: Implement transformation from DCS
+var _ Value = &BlackBodyArea{} // TODO: Implement transformation from DCS
 
 // IntoDCS implements the Value interface.
 func (b BlackBodyArea) IntoDCS(cp ColorProfile) DCSVector {

@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -19,7 +19,10 @@ import (
 // Example: 5 channels could represent RGB + cold white + warm white.
 type DCSVector []float64
 
-var _ Value = &DCSVector{}
+var (
+	_ Value         = &DCSVector{}
+	_ ValueReceiver = &DCSVector{}
+)
 
 // Copy returns a copy of v.
 func (v DCSVector) Copy() DCSVector {
@@ -33,7 +36,7 @@ func (v DCSVector) IntoDCS(cp ColorProfile) DCSVector {
 	return v
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 func (v *DCSVector) FromDCS(cp ColorProfile, v2 DCSVector) error {
 	*v = v2.Copy()
 	return nil
@@ -102,7 +105,10 @@ func (v DCSVector) ComponentSum() float64 {
 // They may or may not be clamped, that depends on the context where they are used.
 type LinDCSVector []float64
 
-var _ Value = &LinDCSVector{}
+var (
+	_ Value         = &LinDCSVector{}
+	_ ValueReceiver = &LinDCSVector{}
+)
 
 // Copy returns a copy of v.
 func (v LinDCSVector) Copy() LinDCSVector {
@@ -116,7 +122,7 @@ func (v LinDCSVector) IntoDCS(cp ColorProfile) DCSVector {
 	return v.ClampedAndDeLinearized(cp.TransferFunction())
 }
 
-// FromDCS implements the Value interface.
+// FromDCS implements the ValueReceiver interface.
 func (v *LinDCSVector) FromDCS(cp ColorProfile, v2 DCSVector) error {
 	*v = v2.ClampedAndLinearized(cp.TransferFunction())
 	return nil
