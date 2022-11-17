@@ -10,20 +10,20 @@ import "github.com/Dadido3/D3iot/light/emission"
 // products contains known WiZ light products.
 // This can't be a map, as otherwise matching would get nondeterministic.
 var products = []Product{
-	{ // Tested: Yes, Profiled: Yes.
+	{ // Tested: Yes, Profiled: Yes (GretagMacbeth eye-one Pro 42.17.79).
 		moduleName:  "ESP03_SHRGB1W_01",
 		deviceClass: deviceClassRGBTW,
 		colorProfile: (&emission.ColorProfileGeneral{
-			WhitePointColor: emission.CIE1931XYZAbs{X: 678.3330441265266, Y: 770.694363496923, Z: 628.5470196992967}.
-				Sum(emission.CIE1931XYZAbs{X: 859.9603595688454, Y: 761.5085215026879, Z: 222.80239948974832}),
+			WhitePointColor: emission.CIE1931XYZAbs{X: 680.061978810243, Y: 761.238333698754, Z: 746.14571679305}.
+				Sum(emission.CIE1931XYZAbs{X: 844.960958613623, Y: 759.761666301247, Z: 230.895041995431}),
 			PrimaryColors: emission.TransformationLinDCSToXYZ{
-				{X: 206.8752389686704, Y: 93.13069968324798, Z: -0.2512365368135359},
-				{X: 37.089570775907255, Y: 182.40345692892237, Z: 22.10488337648135},
-				{X: 90.55843100384949, Y: 42.003319100660164, Z: 532.7732464538633},
+				{X: 198.136406299187, Y: 86.6027529080741, Z: 0.0479301103007406},
+				{X: 43.7905927586912, Y: 195.166857944595, Z: 31.6765054168812},
+				{X: 129.149462685368, Y: 51.1132970868513, Z: 731.546582530092},
 			},
 			WhiteColors: emission.TransformationLinDCSToXYZ{
-				{X: 678.3330441265266, Y: 770.694363496923, Z: 628.5470196992967},
-				{X: 859.9603595688454, Y: 761.5085215026879, Z: 222.80239948974832},
+				{X: 680.061978810243, Y: 761.238333698754, Z: 746.14571679305},
+				{X: 844.960958613623, Y: 759.761666301247, Z: 230.895041995431},
 			},
 			OutputLimiter: emission.OutputLimiterSum{Limit: 2},
 		}).MustInit(),
