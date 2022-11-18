@@ -134,3 +134,25 @@ colorProfile.MustInit() // Precalculate some internal values.
 ### Value interface
 
 Most objects in this library that represent some sort of emission implement the `emission.Value` interface.
+
+### High CRI and high luminance optimization
+
+By default, the library attempts to maximize the performance of high CRI white emitters, which should be desirable in most applications.
+To disable this behavior, you can wrap any light object with `emission.NoWhiteOptimization`, which will prevent the use of any white emitters:
+
+``` go
+highCRILight := emission.StandardIlluminantA.Absolute(200)
+lowCRILight := emission.NoWhiteOptimization{emission.StandardIlluminantA.Absolute(200)}
+```
+
+Using the `WiZ WI-FI BLE 100W A67 E27 922-65 RGB` as example, this will result in the following spectra:
+
+![Alt text](images/WiZ%20WI-FI%20BLE%20100W%20A67%20E27%20922-65%20RGB%20CRI-comparison.png)
+
+|                | Plot color | CRI (Ra) | Planckian temperature | WiZ pilot
+| -------------- | ---------- | -------: | --------------------: | ---------
+| `highCRILight` | black      |     96.3 |     2974K (DE2K -0.7) | `{State: true, Dimming: 100 %, R: 0, G: 0, B: 0, CW: 7, WW: 59}`
+| `lowCRILight`  | red        |     16.6 |      3070K (DE2K 7.4) | `{State: true, Dimming: 100 %, R: 251, G: 151, B: 21, CW: 0, WW: 0}`
+
+In direct comparison on a white surface, both light sources appear fairly identical.
+However, due to "spiky" spectrum of `lowCRILight`, objects illuminated by it may show exaggerated or muted colors.
