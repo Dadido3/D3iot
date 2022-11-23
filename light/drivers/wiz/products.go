@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -14,16 +14,16 @@ var products = []Product{
 		moduleName:  "ESP03_SHRGB1W_01",
 		deviceClass: deviceClassRGBTW,
 		colorProfile: (&emission.ColorProfileGeneral{
-			WhitePointColor: emission.CIE1931XYZAbs{X: 664.9241, Y: 752.0420, Z: 688.7433}.
-				Sum(emission.CIE1931XYZAbs{X: 864.1765, Y: 768.9580, Z: 224.2333}),
+			WhitePointColor: emission.CIE1931XYZAbs{X: 669.8132, Y: 750.2355, Z: 678.1854}.
+				Sum(emission.CIE1931XYZAbs{X: 851.3526, Y: 752.0830, Z: 218.1395}),
 			PrimaryColors: emission.TransformationLinDCSToXYZ{
-				{X: 185.6709, Y: 83.9461, Z: 0.0320},
-				{X: 46.3062, Y: 189.2580, Z: 24.4028},
-				{X: 115.8685, Y: 67.5708, Z: 696.3857},
+				{X: 157.1970, Y: 70.2669, Z: -0.0390},
+				{X: 48.3486, Y: 191.7574, Z: 25.0336},
+				{X: 110.3764, Y: 65.9633, Z: 666.7974},
 			},
 			WhiteColors: emission.TransformationLinDCSToXYZ{
-				{X: 664.9241, Y: 752.0420, Z: 688.7433},
-				{X: 864.1765, Y: 768.9580, Z: 224.2333},
+				{X: 669.8132, Y: 750.2355, Z: 678.1854},
+				{X: 851.3526, Y: 752.0830, Z: 218.1395},
 			},
 			OutputLimiter: emission.OutputLimiterSum{Limit: 2},
 		}).MustInit(),
