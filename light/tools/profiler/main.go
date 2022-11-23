@@ -1,4 +1,4 @@
-// Copyright (c) 2021 David Vogel
+// Copyright (c) 2021-2022 David Vogel
 //
 // This software is released under the MIT License.
 // https://opensource.org/licenses/MIT
@@ -66,17 +66,17 @@ func main() {
 
 	// List of matches.
 	matches := []Match{
-		/*{dcs: emission.LinDCSVector{0, 0, 0, 0.5, 0.5}, xyz: emission.CIE1976LAB{81, 8, 34, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0, 0, 0, 0.5, 0}, xyz: emission.CIE1976LAB{61.8, -9, 13, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0, 0, 0, 0, 0.5}, xyz: emission.CIE1976LAB{60.6, 19, 46, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0.8, 0, 0, 0, 0.1}, xyz: emission.CIE1976LAB{41.1, 51, 48, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0.8, 0, 0, 0.1, 0}, xyz: emission.CIE1976LAB{40.6, 42, 26, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0, 0.6, 0, 0.2, 0}, xyz: emission.CIE1976LAB{52.1, -42, 24, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0, 0.6, 0, 0, 0.2}, xyz: emission.CIE1976LAB{52, -23, 49, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0, 0, 0.6, 0, 0.2}, xyz: emission.CIE1976LAB{43.5, 26, -24, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0, 0, 0.6, 0.2, 0}, xyz: emission.CIE1976LAB{43.3, 10, -33, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0.2, 0.2, 0.2, 0.2, 0.2}, xyz: emission.CIE1976LAB{60.1, 8, 16, emission.StandardIlluminantD65}.CIE1931XYZRel()},
-		{dcs: emission.LinDCSVector{0.2, 0.2, 0.2, 0, 0}, xyz: emission.CIE1976LAB{27.9, 6, -13, emission.StandardIlluminantD65}.CIE1931XYZRel()},*/
+		/*{dcs: emission.LinDCSVector{0, 0, 0, 1, 1}, xyz: emission.CIE1976LAB{L: 419.048502, A: 41.67841, B: 80.909031, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{0, 0, 0, 0, 1}, xyz: emission.CIE1976LAB{L: 329.770063, A: 86.108957, B: 181.467988, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{0, 0, 0, 1, 0}, xyz: emission.CIE1976LAB{L: 327.582717, A: -25.147464, B: -17.477994, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{0, 0, 1, 0, 0}, xyz: emission.CIE1976LAB{L: 122.436975, A: 203.136262, B: -361.854121, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{0, 1, 0, 0, 0}, xyz: emission.CIE1976LAB{L: 200.53485, A: -346.7991, B: 158.705295, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{1, 0, 0, 0, 0}, xyz: emission.CIE1976LAB{L: 144.04654, A: 233.651276, B: 244.636863, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{0.5, 0.5, 0.5, 0, 0}, xyz: emission.CIE1976LAB{L: 187.845395, A: 21.465868, B: -125.669222, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{1, 0, 0, 0.5, 0}, xyz: emission.CIE1976LAB{L: 274.968486, A: 75.372955, B: 12.030361, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{0, 1, 0, 0.5, 0}, xyz: emission.CIE1976LAB{L: 297.018857, A: -138.013113, B: 36.911707, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{0, 0, 1, 0.5, 0}, xyz: emission.CIE1976LAB{L: 269.303661, A: 47.263185, B: -200.430022, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},
+		{dcs: emission.LinDCSVector{1, 0, 0, 0, 0.5}, xyz: emission.CIE1976LAB{L: 276.6268, A: 142.680486, B: 173.870282, WhitePoint: emission.StandardIlluminantD50}.CIE1931XYZRel()},*/
 	}
 
 	http.Handle("/", http.FileServer(http.FS(staticFilesSub)))
@@ -92,7 +92,7 @@ func main() {
 
 	http.HandleFunc("/api/LAB2sRGB", func(w http.ResponseWriter, r *http.Request) {
 		labColor := emission.CIE1976LAB{
-			WhitePoint: emission.StandardIlluminantD65,
+			WhitePoint: emission.StandardIlluminantD50,
 		}
 
 		if err := json.NewDecoder(r.Body).Decode(&labColor); err != nil {
@@ -164,7 +164,7 @@ func main() {
 		// The first color is the brightest color.
 		whitePoint := matches[0].xyz
 		whitePointLumen := *flagMaxLuminance
-		labColor := xyzColor.Relative(whitePointLumen / whitePoint.Y).CIE1976LAB(emission.StandardIlluminantD65)
+		labColor := xyzColor.Relative(whitePointLumen / whitePoint.Y).CIE1976LAB(emission.StandardIlluminantD50)
 
 		if err := json.NewEncoder(w).Encode(labColor); err != nil {
 			err = fmt.Errorf("failed to encode JSON: %w", err)
@@ -179,7 +179,7 @@ func main() {
 			emission.LinDCSVector
 			emission.CIE1976LAB
 		}
-		data.WhitePoint = emission.StandardIlluminantD65
+		data.WhitePoint = emission.StandardIlluminantD50
 
 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 			err = fmt.Errorf("failed to decode JSON: %w", err)
